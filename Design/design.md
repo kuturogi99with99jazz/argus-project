@@ -7,7 +7,7 @@
 - 対象: 初期 MVP
 - 対応要件: `Design/requirement.md`
 - 作成日: 2026-07-22
-- 最終更新日: 2026-07-22
+- 最終更新日: 2026-08-01
 
 本書は、Argus 初期 MVP の実装方式を定義します。要件定義書に残っている未確定事項については、実装可能な設計案を示し、ユーザーの確認が必要なものを「要決定事項」として末尾にまとめます。
 
@@ -40,6 +40,7 @@ Argus/
   AGENTS.md
 
   Design/
+    project-overview.md
     requirement.md
     design.md
     tasks.md

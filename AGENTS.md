@@ -23,7 +23,7 @@ Argus は、登録した Web ページの更新有無をユーザーが手動で
 - 要件: `Design/requirement.md`
 - 設計: `Design/design.md`
 - タスク: `Design/tasks.md`
-- プロジェクト概要: `README.md`
+- プロジェクト構想: `Design/project-overview.md`
 
 文書や指示の内容が矛盾する場合は、以下の順に優先します。
 
@@ -31,7 +31,7 @@ Argus は、登録した Web ページの更新有無をユーザーが手動で
 2. `Design/requirement.md`
 3. `Design/design.md`
 4. `Design/tasks.md`
-5. `README.md`
+5. `Design/project-overview.md`
 
 矛盾や解釈によって実装結果が大きく変わる曖昧さを見つけた場合は、勝手に決定せずユーザーへ確認してください。
 
