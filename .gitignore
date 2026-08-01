@@ -1,0 +1,23 @@
+﻿# Build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+artifacts/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test and coverage artifacts
+TestResults/
+coverage*/
+*.coverage
+*.coveragexml
+
+# OS files
+Thumbs.db
+Desktop.ini

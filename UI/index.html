@@ -1,0 +1,169 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Argus UIモック</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="prototype-page">
+    <section class="main-form" aria-labelledby="app-title">
+      <header class="app-header">
+        <div>
+          <h1 id="app-title">Argus</h1>
+          <p>Webページ更新チェッカー</p>
+        </div>
+        <div class="header-summary" aria-label="監視対象の概要">
+          <span id="target-count">監視対象 0件</span>
+          <span id="checking-count">チェック中 0件</span>
+        </div>
+      </header>
+
+      <div class="toolbar" role="toolbar" aria-label="監視対象の操作">
+        <div class="toolbar-group">
+          <button id="check-all-button" class="button button-primary" type="button">
+            全件チェック
+          </button>
+          <button id="check-selected-button" class="button button-primary" type="button" disabled>
+            選択をチェック
+          </button>
+        </div>
+        <div class="toolbar-separator" aria-hidden="true"></div>
+        <div class="toolbar-group">
+          <button id="open-button" class="button button-secondary" type="button" disabled>
+            ブラウザで開く
+          </button>
+          <button id="add-button" class="button button-secondary" type="button">
+            追加
+          </button>
+          <button id="edit-button" class="button button-secondary" type="button" disabled>
+            編集
+          </button>
+          <button id="delete-button" class="button button-danger" type="button" disabled>
+            削除
+          </button>
+        </div>
+      </div>
+
+      <div id="operation-message" class="operation-message" role="alert" hidden>
+        <span id="operation-message-text"></span>
+        <button id="dismiss-message-button" class="message-close" type="button" aria-label="メッセージを閉じる">×</button>
+      </div>
+
+      <section class="target-list-panel" aria-labelledby="target-list-title">
+        <div class="list-heading">
+          <div>
+            <h2 id="target-list-title">監視対象一覧</h2>
+            <p>行をクリックして選択します。Ctrlキーを押しながらクリックすると複数選択できます。</p>
+          </div>
+          <span id="selection-summary" class="selection-summary">選択 0件</span>
+        </div>
+
+        <div class="data-grid-view">
+          <table id="target-table" aria-label="監視対象一覧" aria-multiselectable="true">
+            <colgroup>
+              <col class="column-enabled">
+              <col class="column-name">
+              <col class="column-url">
+              <col class="column-status">
+              <col class="column-checked-at">
+              <col class="column-error">
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">有効</th>
+                <th scope="col">名前</th>
+                <th scope="col">URL</th>
+                <th scope="col">状態</th>
+                <th scope="col">最終チェック</th>
+                <th scope="col">エラー</th>
+              </tr>
+            </thead>
+            <tbody id="target-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="status-strip" aria-label="アプリケーション情報">
+        <span id="status-message" class="status-message" role="status">準備ができました。</span>
+        <span class="copyright">Copyright © 2026 SIA-ACT</span>
+        <span class="debug-badge">DEBUG</span>
+        <span class="version">v0.1.0</span>
+      </footer>
+    </section>
+  </main>
+
+  <dialog id="target-edit-dialog" class="dialog target-edit-form" aria-labelledby="target-edit-title">
+    <form id="target-edit-form" novalidate>
+      <div class="dialog-header">
+        <div>
+          <h2 id="target-edit-title">監視対象を追加</h2>
+          <p>更新を確認したいWebページを登録します。</p>
+        </div>
+        <button class="dialog-close" type="button" data-dialog-close aria-label="ダイアログを閉じる">×</button>
+      </div>
+
+      <div id="form-operation-error" class="form-operation-error" role="alert" hidden></div>
+
+      <div class="dialog-body">
+        <div class="form-field">
+          <label for="target-name">名前 <span class="required-label">必須</span></label>
+          <input id="target-name" name="name" type="text" maxlength="100" autocomplete="off" aria-describedby="target-name-error">
+          <span id="target-name-error" class="field-error" aria-live="polite"></span>
+        </div>
+
+        <div class="form-field">
+          <label for="target-url">URL <span class="required-label">必須</span></label>
+          <input id="target-url" name="url" type="url" maxlength="2048" placeholder="https://example.com/" autocomplete="url" aria-describedby="target-url-error">
+          <span id="target-url-error" class="field-error" aria-live="polite"></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="watch-mode">監視モード</label>
+            <select id="watch-mode" name="watchMode">
+              <option value="html-text">HTMLテキスト比較</option>
+            </select>
+          </div>
+          <label class="checkbox-field">
+            <input id="target-enabled" name="enabled" type="checkbox" checked>
+            <span>この監視対象を有効にする</span>
+          </label>
+        </div>
+
+        <div class="form-field form-field-grow">
+          <label for="target-memo">メモ <span class="optional-label">任意</span></label>
+          <textarea id="target-memo" name="memo" rows="5" maxlength="500" placeholder="確認したい内容やページの用途など"></textarea>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button id="cancel-edit-button" class="button button-secondary" type="button">キャンセル</button>
+        <button class="button button-primary" type="submit">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="delete-dialog" class="dialog confirmation-dialog" aria-labelledby="delete-dialog-title">
+    <form method="dialog">
+      <div class="dialog-header">
+        <div>
+          <h2 id="delete-dialog-title">監視対象の削除</h2>
+          <p>この操作は取り消せません。</p>
+        </div>
+        <button class="dialog-close" type="button" data-delete-close aria-label="ダイアログを閉じる">×</button>
+      </div>
+      <div class="confirmation-body">
+        <p><strong id="delete-target-name"></strong> を一覧から削除しますか？</p>
+        <p class="confirmation-note">保存済みの前回チェックデータも削除されます。</p>
+      </div>
+      <div class="dialog-actions">
+        <button id="cancel-delete-button" class="button button-secondary" type="button">キャンセル</button>
+        <button id="confirm-delete-button" class="button button-danger-filled" type="button">削除する</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
