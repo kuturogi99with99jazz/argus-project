@@ -26,11 +26,19 @@ public static class WatchTargetValidator
                 "http:// または https:// で始まる正しいURLを入力してください。"));
         }
 
-        if (input.Mode != WatchMode.HtmlText)
+        if (!Enum.IsDefined(input.Mode))
         {
             errors.Add(new ValidationError(
                 nameof(WatchTargetInput.Mode),
                 "選択された監視モードには対応していません。"));
+        }
+
+        var cssSelector = NormalizeOptional(input.CssSelector);
+        if (input.Mode == WatchMode.CssSelector && cssSelector is null)
+        {
+            errors.Add(new ValidationError(
+                nameof(WatchTargetInput.CssSelector),
+                "CSSセレクタを入力してください。"));
         }
 
         return errors.Count == 0
@@ -39,7 +47,10 @@ public static class WatchTargetValidator
                 {
                     Name = name,
                     Url = urlText,
-                    Memo = NormalizeOptional(input.Memo)
+                    Memo = NormalizeOptional(input.Memo),
+                    CssSelector = input.Mode == WatchMode.CssSelector
+                        ? cssSelector
+                        : null
                 })
             : ValidationResult<WatchTargetInput>.Failure(errors);
     }
@@ -68,7 +79,8 @@ public static class WatchTargetValidator
                 normalized.Mode,
                 normalized.IsEnabled,
                 normalized.Memo,
-                previousSnapshot));
+                previousSnapshot,
+                normalized.CssSelector));
     }
 
 

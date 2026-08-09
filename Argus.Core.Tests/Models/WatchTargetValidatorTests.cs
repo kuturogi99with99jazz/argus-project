@@ -56,4 +56,43 @@ public sealed class WatchTargetValidatorTests
         Assert.Equal("memo", result.Value.Memo);
         Assert.Null(result.Value.PreviousSnapshot);
     }
+
+    /// <summary>CSSセレクタ比較だけ抽出条件を必須とすることを検証</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Validate_WhenCssSelectorModeHasNoSelector_ReturnsCssSelectorError(string? selector)
+    {
+        var input = new WatchTargetInput(
+            "Sample",
+            "https://example.com/",
+            WatchMode.CssSelector,
+            true,
+            null,
+            selector);
+
+        var result = WatchTargetValidator.Validate(input);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Field == nameof(WatchTargetInput.CssSelector));
+    }
+
+    /// <summary>CSSセレクタの前後空白が保存前に除去されることを検証</summary>
+    [Fact]
+    public void Create_WhenCssSelectorIsValid_TrimsSelector()
+    {
+        var input = new WatchTargetInput(
+            "Sample",
+            "https://example.com/",
+            WatchMode.CssSelector,
+            true,
+            null,
+            "  main > .news  ");
+
+        var result = WatchTargetValidator.Create(Guid.NewGuid(), input, null);
+
+        Assert.True(result.IsValid);
+        Assert.Equal("main > .news", result.Value?.CssSelector);
+    }
 }

@@ -13,7 +13,8 @@ public sealed record WatchTarget(
     WatchMode Mode,
     bool IsEnabled,
     string? Memo,
-    WatchSnapshot? PreviousSnapshot);
+    WatchSnapshot? PreviousSnapshot,
+    string? CssSelector = null);
 
 /// <summary>監視対象の登録・編集に使う未検証入力値</summary>
 public sealed record WatchTargetInput(
@@ -21,4 +22,5 @@ public sealed record WatchTargetInput(
     string Url,
     WatchMode Mode,
     bool IsEnabled,
-    string? Memo);
+    string? Memo,
+    string? CssSelector = null);

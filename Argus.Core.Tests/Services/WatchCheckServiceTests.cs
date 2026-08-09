@@ -94,6 +94,29 @@ public sealed class WatchCheckServiceTests
         Assert.False(string.IsNullOrEmpty(result.ErrorMessage));
     }
 
+    /// <summary>監視対象固有のモードとセレクタを抽出処理へ渡すことを検証</summary>
+    [Fact]
+    public async Task FetchHashAsync_PassesTargetAndFetchedHtmlToContentExtractor()
+    {
+        var extractor = new RecordingContentExtractor();
+        var service = new WatchCheckService(
+            new StubFetcher(),
+            extractor,
+            new StubHashService("hash"),
+            new FixedTimeProvider(CompletedAt));
+        var target = CreateTarget(null) with
+        {
+            Mode = WatchMode.CssSelector,
+            CssSelector = ".news"
+        };
+
+        var attempt = await service.FetchHashAsync(target, CancellationToken.None);
+
+        Assert.True(attempt.IsSuccess);
+        Assert.Same(target, extractor.Target);
+        Assert.Equal("<p>content</p>", extractor.Html);
+    }
+
     /// <summary>各テストで共通する前提データを一貫して構築するための補助処理</summary>
     private static WatchCheckService CreateService(string hash) =>
         new(
@@ -128,18 +151,36 @@ public sealed class WatchCheckServiceTests
     }
 
     /// <summary>外部依存や並行状態を決定的に制御するためのテスト補助型</summary>
-    private sealed class StubNormalizer : IContentNormalizer
+    private sealed class StubNormalizer : IComparisonContentExtractor
     {
         /// <summary>外部依存の応答をテストシナリオから制御可能にするための実装</summary>
-        public string Normalize(string html) => "content";
+        public string Extract(WatchTarget target, string html) => "content";
     }
 
     /// <summary>外部依存や並行状態を決定的に制御するためのテスト補助型</summary>
-    private sealed class ThrowingNormalizer : IContentNormalizer
+    private sealed class ThrowingNormalizer : IComparisonContentExtractor
     {
         /// <summary>外部依存の応答をテストシナリオから制御可能にするための実装</summary>
-        public string Normalize(string html) =>
+        public string Extract(WatchTarget target, string html) =>
             throw new InvalidOperationException("parse");
+    }
+
+    /// <summary>抽出処理へ渡された監視条件とHTMLを記録するテスト補助型</summary>
+    private sealed class RecordingContentExtractor : IComparisonContentExtractor
+    {
+        /// <summary>最後に抽出要求された監視対象</summary>
+        public WatchTarget? Target { get; private set; }
+
+        /// <summary>最後に抽出要求されたHTML</summary>
+        public string? Html { get; private set; }
+
+        /// <summary>入力を記録してハッシュ化可能な固定内容を返却</summary>
+        public string Extract(WatchTarget target, string html)
+        {
+            Target = target;
+            Html = html;
+            return "content";
+        }
     }
 
     /// <summary>外部依存や並行状態を決定的に制御するためのテスト補助型</summary>

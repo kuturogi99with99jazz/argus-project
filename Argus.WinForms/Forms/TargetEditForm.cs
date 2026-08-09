@@ -28,7 +28,11 @@ public partial class TargetEditForm : Form
         InitializeComponent();
         titleLabel.Text = target is null ? "監視対象を追加" : "監視対象を編集";
         Text = titleLabel.Text;
-        modeComboBox.SelectedIndex = 0;
+        modeComboBox.DisplayMember = nameof(WatchModeOption.DisplayName);
+        modeComboBox.ValueMember = nameof(WatchModeOption.Value);
+        modeComboBox.DataSource = WatchModeOption.All.ToArray();
+        modeComboBox.SelectedValue = target?.Mode ?? WatchMode.HtmlText;
+        modeComboBox.SelectedValueChanged += (_, _) => UpdateCssSelectorVisibility();
 
         if (target is not null)
         {
@@ -36,7 +40,10 @@ public partial class TargetEditForm : Form
             urlTextBox.Text = target.Url.AbsoluteUri;
             enabledCheckBox.Checked = target.IsEnabled;
             memoTextBox.Text = target.Memo ?? string.Empty;
+            cssSelectorTextBox.Text = target.CssSelector ?? string.Empty;
         }
+
+        UpdateCssSelectorVisibility();
 
         ApplyTheme();
         saveButton.Click += SaveButton_Click;
@@ -58,9 +65,10 @@ public partial class TargetEditForm : Form
             var input = new WatchTargetInput(
                 nameTextBox.Text,
                 urlTextBox.Text,
-                WatchMode.HtmlText,
+                SelectedMode,
                 enabledCheckBox.Checked,
-                memoTextBox.Text);
+                memoTextBox.Text,
+                cssSelectorTextBox.Text);
             var result = await saveAsync(input, cancellationToken);
 
             if (result.IsSuccess && result.Target is not null)
@@ -80,6 +88,10 @@ public partial class TargetEditForm : Form
                 else if (error.Field == nameof(WatchTargetInput.Url))
                 {
                     errorProvider.SetError(urlTextBox, error.Message);
+                }
+                else if (error.Field == nameof(WatchTargetInput.CssSelector))
+                {
+                    errorProvider.SetError(cssSelectorTextBox, error.Message);
                 }
                 else
                 {
@@ -104,6 +116,11 @@ public partial class TargetEditForm : Form
             {
                 urlTextBox.Focus();
             }
+            else if (result.ValidationErrors.Any(error =>
+                         error.Field == nameof(WatchTargetInput.CssSelector)))
+            {
+                cssSelectorTextBox.Focus();
+            }
         }
         catch (OperationCanceledException)
         {
@@ -116,6 +133,23 @@ public partial class TargetEditForm : Form
                 saveButton.Enabled = true;
                 cancelButton.Enabled = true;
             }
+        }
+    }
+
+    /// <summary>選択項目が未確定な初期化中も既定モードへ安全にフォールバック</summary>
+    private WatchMode SelectedMode =>
+        modeComboBox.SelectedValue is WatchMode mode ? mode : WatchMode.HtmlText;
+
+    /// <summary>CSSセレクタ固有の入力欄を必要な場合だけ表示して画面密度を維持</summary>
+    private void UpdateCssSelectorVisibility()
+    {
+        var visible = SelectedMode == WatchMode.CssSelector;
+        cssSelectorLabel.Visible = visible;
+        cssSelectorTextBox.Visible = visible;
+        fieldsLayout.RowStyles[3].Height = visible ? 48F : 0F;
+        if (!visible)
+        {
+            errorProvider.SetError(cssSelectorTextBox, string.Empty);
         }
     }
 

@@ -26,7 +26,7 @@ public sealed class MainFormLayoutTests
                     TargetStoreDocument.Empty);
                 var checkService = new WatchCheckService(
                     new StubWebPageFetcher(),
-                    new HtmlTextNormalizer(),
+                    new ComparisonContentExtractor(new HtmlTextNormalizer()),
                     new Sha256HashService());
                 using var coordinator = new CheckCoordinator(repository, checkService);
                 var managementService =
@@ -114,7 +114,7 @@ public sealed class MainFormLayoutTests
                     TargetStoreDocument.Empty);
                 var checkService = new WatchCheckService(
                     new StubWebPageFetcher(),
-                    new HtmlTextNormalizer(),
+                    new ComparisonContentExtractor(new HtmlTextNormalizer()),
                     new Sha256HashService());
                 using var coordinator = new CheckCoordinator(repository, checkService);
                 var managementService =

@@ -20,19 +20,19 @@ public sealed record CheckAttempt(string? ContentHash, string? ErrorMessage)
 public sealed class WatchCheckService
 {
     private readonly IWebPageFetcher fetcher;
-    private readonly IContentNormalizer normalizer;
+    private readonly IComparisonContentExtractor contentExtractor;
     private readonly IHashService hashService;
     private readonly TimeProvider timeProvider;
 
     /// <summary>取得、正規化、ハッシュ化、時刻取得の責務を組み合わせ</summary>
     public WatchCheckService(
         IWebPageFetcher fetcher,
-        IContentNormalizer normalizer,
+        IComparisonContentExtractor contentExtractor,
         IHashService hashService,
         TimeProvider? timeProvider = null)
     {
         this.fetcher = fetcher ?? throw new ArgumentNullException(nameof(fetcher));
-        this.normalizer = normalizer ?? throw new ArgumentNullException(nameof(normalizer));
+        this.contentExtractor = contentExtractor ?? throw new ArgumentNullException(nameof(contentExtractor));
         this.hashService = hashService ?? throw new ArgumentNullException(nameof(hashService));
         this.timeProvider = timeProvider ?? TimeProvider.System;
     }
@@ -49,8 +49,8 @@ public sealed class WatchCheckService
             var html = await fetcher
                 .FetchAsync(target.Url, cancellationToken)
                 .ConfigureAwait(false);
-            var normalized = normalizer.Normalize(html);
-            return CheckAttempt.Success(hashService.Compute(normalized));
+            var comparisonContent = contentExtractor.Extract(target, html);
+            return CheckAttempt.Success(hashService.Compute(comparisonContent));
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

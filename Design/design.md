@@ -7,7 +7,7 @@
 - 対象: 初期 MVP
 - 対応要件: `Design/requirement.md`
 - 作成日: 2026-07-22
-- 最終更新日: 2026-08-01
+- 最終更新日: 2026-08-09
 
 本書は、Argus 初期 MVP の実装方式を定義します。要件定義書に残っている未確定事項については、実装可能な設計案を示し、ユーザーの確認が必要なものを「要決定事項」として末尾にまとめます。
 
@@ -149,14 +149,15 @@ flowchart LR
 | コンポーネント | 責務 | 主な対応要件 |
 | --- | --- | --- |
 | `MainForm` | 一覧表示、選択、ユーザー操作受付、結果反映、コピーライト・バージョン・ビルド種別の表示 | FR-001, FR-003, FR-004, FR-008, FR-011, FR-012, FR-013 |
-| `TargetEditForm` | 監視対象の追加・編集入力と入力エラー表示 | FR-012 |
+| `TargetEditForm` | 監視対象の追加・編集入力、比較モード固有項目、入力エラー表示 | FR-012, FR-014, FR-015 |
 | `ApplicationInfoProvider` | エントリアセンブリからコピーライトと表示用バージョンを取得する | FR-013 |
 | `BrowserService` | Windowsの既定ブラウザでURLを開く | FR-011 |
 | `CheckCoordinator` | 全件・選択チェックの受付、並行実行、結果コミットの調停 | FR-004, FR-008, FR-009, FR-010 |
 | `WatchTargetManagementService` | 監視対象の検証、追加、編集、削除 | FR-012 |
 | `WatchTargetRepository` | メモリ上の監視対象管理と変更処理の直列化 | FR-002, FR-009, FR-010, FR-012 |
-| `WatchCheckService` | 1件のHTML取得、正規化、比較、結果生成 | FR-005, FR-006, FR-007 |
+| `WatchCheckService` | 1件のHTML取得、モード別抽出、比較、結果生成 | FR-005, FR-006, FR-007, FR-014, FR-015 |
 | `WebPageFetcher` | HTTP/HTTPSページの取得 | FR-005 |
+| `ComparisonContentExtractor` | 監視モードに応じた比較文字列の選択と抽出 | FR-006, FR-014, FR-015 |
 | `HtmlTextNormalizer` | HTML解析、不要要素除去、テキスト正規化 | FR-006 |
 | `Sha256HashService` | 正規化済みテキストの比較用ハッシュ生成 | FR-007 |
 | `JsonTargetStore` | JSONの読み込みと安全な保存 | FR-002, FR-009, FR-010 |
@@ -172,6 +173,11 @@ public interface IWebPageFetcher
 public interface IContentNormalizer
 {
     string Normalize(string html);
+}
+
+public interface IComparisonContentExtractor
+{
+    string Extract(WatchTarget target, string html);
 }
 
 public interface IHashService
@@ -201,7 +207,8 @@ public interface ITargetStore
 | `Id` | `Guid` | 必須 | 監視対象を一意に識別するID |
 | `Name` | `string` | 必須 | 一覧表示用の名前 |
 | `Url` | `Uri` | 必須 | 取得対象となる絶対HTTP/HTTPS URL |
-| `Mode` | `WatchMode` | 必須 | 初期 MVP では `HtmlText` のみ |
+| `Mode` | `WatchMode` | 必須 | `HtmlText`、`HtmlWhole`、`CssSelector` |
+| `CssSelector` | `string?` | 条件付き必須 | `CssSelector` モードの場合のみ必須 |
 | `IsEnabled` | `bool` | 必須 | チェック対象へ含めるか |
 | `Memo` | `string?` | 任意 | ユーザー向けメモ |
 | `PreviousSnapshot` | `WatchSnapshot?` | 任意 | 直前に正常終了した比較データ |
@@ -211,9 +218,9 @@ public interface ITargetStore
 - `Id` はJSON内で重複してはならない
 - `Name` は空文字または空白だけを許可しない
 - `Url` は絶対URLとし、スキームは `http` または `https` のみ許可する
-- 初期 MVP で扱える `Mode` は `HtmlText` のみとする
+- `Mode` は `HtmlText`、`HtmlWhole`、`CssSelector` のみ許可する
 
-CSSセレクタとサイト種別は初期 MVP で使用しないため、初期スキーマには含めません。該当機能を要件へ追加する際に、後方互換性を保ってスキーマを拡張します。
+CSSセレクタは省略可能な `cssSelector` としてスキーマバージョン1へ追加します。既存データでは省略されるため後方互換性を維持します。サイト種別はスキーマに含めません。
 
 ### 5.2 `WatchSnapshot`
 
@@ -261,7 +268,9 @@ public enum CheckStatus
 ```csharp
 public enum WatchMode
 {
-    HtmlText
+    HtmlText,
+    HtmlWhole,
+    CssSelector
 }
 ```
 
@@ -515,6 +524,21 @@ Argus/0.1
 - JSONには小文字の16進文字列として保存する
 - ハッシュ比較には序数比較を使用する
 
+### 9.4 HTML全体比較
+
+- `HtmlWhole` では取得・文字コード変換後のHTML文字列を加工せずハッシュ化する
+- 要素、属性、コメント、空白、改行を含む文字列上の差を更新として扱う
+
+### 9.5 CSSセレクタ比較
+
+1. AngleSharpでHTMLをDOMへ解析する
+2. 保存済みのCSSセレクタを `QuerySelectorAll` へ渡す
+3. 一致する全要素の `OuterHtml` を文書順に改行文字1文字で連結する
+4. セレクタ未指定、不正、または一致件数0の場合は `InvalidDataException` とする
+5. 抽出文字列をSHA-256でハッシュ化する
+
+CSSセレクタ自体は入力時に前後空白を除去して保存します。モード、URL、CSSセレクタのいずれかが変わった場合は比較条件が変化するため、前回スナップショットを破棄します。
+
 ---
 
 ## 10. UI設計
@@ -587,7 +611,8 @@ WinForms実装前に、画面構成と夏テーマの視認性を確認するた
 | --- | --- | --- |
 | 名前 | TextBox | 必須。前後の空白を除去後、1文字以上 |
 | URL | TextBox | 必須。絶対HTTP/HTTPS URL |
-| 監視モード | ComboBox | 必須。初期 MVP ではHTMLテキスト比較のみ |
+| 監視モード | ComboBox | 必須。HTMLテキスト、HTML全体、CSSセレクタから選択 |
+| CSSセレクタ | TextBox | CSSセレクタ比較の場合のみ表示して必須 |
 | 有効 | CheckBox | 新規追加時の初期値は有効 |
 | メモ | 複数行TextBox | 任意 |
 
@@ -798,7 +823,7 @@ WinForms実装前に、画面構成と夏テーマの視認性を確認するた
 | `HtmlTextNormalizer` | 文字列または `TestData` のHTMLを入力する純粋な単体テスト |
 | `Sha256HashService` | 固定文字列と既知の期待値を比較する単体テスト |
 | `WebPageFetcher` | 応答バイト列とHTTPヘッダーを制御するフェイク `HttpMessageHandler` を使用する単体テスト |
-| `WatchCheckService` | `IWebPageFetcher`、`IContentNormalizer`、`IHashService` のスタブを使用する単体テスト |
+| `WatchCheckService` | `IWebPageFetcher`、`IComparisonContentExtractor`、`IHashService` のスタブを使用する単体テスト |
 | `JsonTargetStore` | テストごとの一時ディレクトリを使用するファイル結合テスト |
 | `WatchTargetManagementService` | ストアのフェイクを使用する追加・編集・削除の単体テスト |
 | `CheckCoordinator` | 完了順序を制御できるフェイクと同期プリミティブを使用する並行処理テスト |

@@ -17,6 +17,8 @@ partial class TargetEditForm
     private TextBox urlTextBox = null!;
     private Label modeLabel = null!;
     private ComboBox modeComboBox = null!;
+    private Label cssSelectorLabel = null!;
+    private TextBox cssSelectorTextBox = null!;
     private CheckBox enabledCheckBox = null!;
     private Label memoLabel = null!;
     private TextBox memoTextBox = null!;
@@ -50,6 +52,8 @@ partial class TargetEditForm
         urlTextBox = new TextBox();
         modeLabel = new Label();
         modeComboBox = new ComboBox();
+        cssSelectorLabel = new Label();
+        cssSelectorTextBox = new TextBox();
         enabledCheckBox = new CheckBox();
         memoLabel = new Label();
         memoTextBox = new TextBox();
@@ -108,16 +112,19 @@ partial class TargetEditForm
         fieldsLayout.Controls.Add(urlTextBox, 1, 1);
         fieldsLayout.Controls.Add(modeLabel, 0, 2);
         fieldsLayout.Controls.Add(modeComboBox, 1, 2);
-        fieldsLayout.Controls.Add(new Label(), 0, 3);
-        fieldsLayout.Controls.Add(enabledCheckBox, 1, 3);
-        fieldsLayout.Controls.Add(memoLabel, 0, 4);
-        fieldsLayout.Controls.Add(memoTextBox, 1, 4);
+        fieldsLayout.Controls.Add(cssSelectorLabel, 0, 3);
+        fieldsLayout.Controls.Add(cssSelectorTextBox, 1, 3);
+        fieldsLayout.Controls.Add(new Label(), 0, 4);
+        fieldsLayout.Controls.Add(enabledCheckBox, 1, 4);
+        fieldsLayout.Controls.Add(memoLabel, 0, 5);
+        fieldsLayout.Controls.Add(memoTextBox, 1, 5);
         fieldsLayout.Dock = DockStyle.Fill;
         fieldsLayout.Padding = new Padding(18, 14, 24, 10);
-        fieldsLayout.RowCount = 5;
+        fieldsLayout.RowCount = 6;
         fieldsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
         fieldsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
         fieldsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+        fieldsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 0F));
         fieldsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         fieldsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
@@ -146,8 +153,18 @@ partial class TargetEditForm
         modeComboBox.AccessibleName = "監視モード";
         modeComboBox.Dock = DockStyle.Top;
         modeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        modeComboBox.Items.AddRange(new object[] { "HTMLテキスト比較" });
         modeComboBox.Margin = new Padding(0, 3, 0, 8);
+
+        cssSelectorLabel.AutoSize = true;
+        cssSelectorLabel.Margin = new Padding(0, 8, 8, 0);
+        cssSelectorLabel.Text = "CSSセレクタ（必須）";
+        cssSelectorLabel.Visible = false;
+
+        cssSelectorTextBox.AccessibleName = "CSSセレクタ";
+        cssSelectorTextBox.Dock = DockStyle.Top;
+        cssSelectorTextBox.Margin = new Padding(0, 3, 0, 8);
+        cssSelectorTextBox.MaxLength = 2048;
+        cssSelectorTextBox.Visible = false;
 
         enabledCheckBox.AccessibleName = "この監視対象を有効にする";
         enabledCheckBox.AutoSize = true;

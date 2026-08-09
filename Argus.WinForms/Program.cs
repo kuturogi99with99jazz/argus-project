@@ -61,8 +61,9 @@ internal static class Program
         var repository = new WatchTargetRepository(targetStore, initialDocument);
         var fetcher = new WebPageFetcher(httpClient);
         var normalizer = new HtmlTextNormalizer();
+        var contentExtractor = new ComparisonContentExtractor(normalizer);
         var hashService = new Sha256HashService();
-        var checkService = new WatchCheckService(fetcher, normalizer, hashService);
+        var checkService = new WatchCheckService(fetcher, contentExtractor, hashService);
         using var coordinator = new CheckCoordinator(repository, checkService);
         var managementService = new WatchTargetManagementService(repository, coordinator);
         var browserService = new BrowserService();

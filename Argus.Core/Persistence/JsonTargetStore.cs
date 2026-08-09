@@ -149,7 +149,8 @@ public sealed class JsonTargetStore : ITargetStore
                 targetDto.Url ?? string.Empty,
                 targetDto.Mode,
                 targetDto.IsEnabled,
-                targetDto.Memo);
+                targetDto.Memo,
+                targetDto.CssSelector);
 
             WatchSnapshot? snapshot = null;
             if (targetDto.PreviousSnapshot is not null)
@@ -195,6 +196,7 @@ public sealed class JsonTargetStore : ITargetStore
                 Mode = target.Mode,
                 IsEnabled = target.IsEnabled,
                 Memo = target.Memo,
+                CssSelector = target.CssSelector,
                 PreviousSnapshot = target.PreviousSnapshot is null
                     ? null
                     : new WatchSnapshotDto
@@ -274,6 +276,8 @@ public sealed class JsonTargetStore : ITargetStore
         public bool IsEnabled { get; set; }
         /// <summary>MemoをJSON契約とドメインモデル間で受け渡すための値</summary>
         public string? Memo { get; set; }
+        /// <summary>CssSelectorをJSON契約とドメインモデル間で受け渡すための値</summary>
+        public string? CssSelector { get; set; }
         /// <summary>PreviousSnapshotをJSON契約とドメインモデル間で受け渡すための値</summary>
         public WatchSnapshotDto? PreviousSnapshot { get; set; }
     }

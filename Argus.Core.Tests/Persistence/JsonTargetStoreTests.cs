@@ -67,6 +67,26 @@ public sealed class JsonTargetStoreTests : IDisposable
         Assert.Equal(checkedAt, loaded.Targets[0].PreviousSnapshot?.CheckedAtUtc);
     }
 
+    /// <summary>追加した比較方式とCSSセレクタがJSONを往復できることを検証</summary>
+    [Fact]
+    public async Task SaveAndLoadAsync_RoundTripsHtmlWholeAndCssSelectorModes()
+    {
+        var document = new TargetStoreDocument(
+            TargetStoreDocument.CurrentSchemaVersion,
+            [
+                new WatchTarget(Guid.NewGuid(), "Whole", new Uri("https://example.com/a"), WatchMode.HtmlWhole, true, null, null),
+                new WatchTarget(Guid.NewGuid(), "Selector", new Uri("https://example.com/b"), WatchMode.CssSelector, true, null, null, "main > .news")
+            ]);
+        var store = new JsonTargetStore(filePath);
+
+        await store.SaveAsync(document, CancellationToken.None);
+        var loaded = await store.LoadAsync(CancellationToken.None);
+
+        Assert.Equal(WatchMode.HtmlWhole, loaded.Targets[0].Mode);
+        Assert.Equal(WatchMode.CssSelector, loaded.Targets[1].Mode);
+        Assert.Equal("main > .news", loaded.Targets[1].CssSelector);
+    }
+
     /// <summary>メソッド名で示す前提、操作、期待結果を一つの振る舞いとして検証</summary>
     [Theory]
     [InlineData("")]

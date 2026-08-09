@@ -148,6 +148,10 @@ public sealed class WatchTargetManagementService
 
                         var preserveSnapshot =
                             currentTarget.Mode == inputValidation.Value.Mode &&
+                            string.Equals(
+                                currentTarget.CssSelector,
+                                inputValidation.Value.CssSelector,
+                                StringComparison.Ordinal) &&
                             currentTarget.Url.Equals(
                                 new Uri(inputValidation.Value.Url));
                         var created = WatchTargetValidator.Create(

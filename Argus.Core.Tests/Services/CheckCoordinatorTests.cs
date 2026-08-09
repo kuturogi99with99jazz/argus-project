@@ -285,10 +285,10 @@ public sealed class CheckCoordinatorTests
     }
 
     /// <summary>外部依存や並行状態を決定的に制御するためのテスト補助型</summary>
-    private sealed class StubNormalizer : IContentNormalizer
+    private sealed class StubNormalizer : IComparisonContentExtractor
     {
         /// <summary>外部依存の応答をテストシナリオから制御可能にするための実装</summary>
-        public string Normalize(string html) => html;
+        public string Extract(WatchTarget target, string html) => html;
     }
 
     /// <summary>外部依存や並行状態を決定的に制御するためのテスト補助型</summary>

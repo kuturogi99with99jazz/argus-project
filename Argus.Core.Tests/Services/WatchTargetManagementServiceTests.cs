@@ -59,6 +59,40 @@ public sealed class WatchTargetManagementServiceTests
         Assert.Null(result.Target?.PreviousSnapshot);
     }
 
+    /// <summary>比較モード変更時に異なる比較値を引き継がないことを検証</summary>
+    [Fact]
+    public async Task EditAsync_WhenModeChanges_ClearsSnapshot()
+    {
+        var target = CreateTarget();
+        var repository = CreateRepository(target);
+        var service = new WatchTargetManagementService(repository, new IdleExecutionState());
+
+        var result = await service.EditAsync(
+            target.Id,
+            new WatchTargetInput(target.Name, target.Url.AbsoluteUri, WatchMode.HtmlWhole, true, null),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(result.Target?.PreviousSnapshot);
+    }
+
+    /// <summary>CSSセレクタ変更時に異なる抽出範囲の比較値を引き継がないことを検証</summary>
+    [Fact]
+    public async Task EditAsync_WhenCssSelectorChanges_ClearsSnapshot()
+    {
+        var target = CreateTarget() with { Mode = WatchMode.CssSelector, CssSelector = ".old" };
+        var repository = CreateRepository(target);
+        var service = new WatchTargetManagementService(repository, new IdleExecutionState());
+
+        var result = await service.EditAsync(
+            target.Id,
+            new WatchTargetInput(target.Name, target.Url.AbsoluteUri, target.Mode, true, null, ".new"),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(result.Target?.PreviousSnapshot);
+    }
+
     /// <summary>メソッド名で示す前提、操作、期待結果を一つの振る舞いとして検証</summary>
     [Fact]
     public async Task EditAsync_WhenUrlPathCaseChanges_ClearsSnapshot()
