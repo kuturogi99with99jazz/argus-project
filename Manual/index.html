@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ArgusでWebページの更新を手動確認するための公式ユーザーマニュアル">
+  <title>Argus ユーザーマニュアル</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #0b3858;
+      --blue: #087fbd;
+      --blue-dark: #056a9f;
+      --blue-pale: #eaf7fc;
+      --sky: #d9f2fb;
+      --ink: #183244;
+      --muted: #5b7180;
+      --line: #cfe2eb;
+      --surface: #ffffff;
+      --page: #f4fafc;
+      --green: #17754c;
+      --green-pale: #e9f7ef;
+      --amber: #8a5200;
+      --amber-pale: #fff5df;
+      --red: #a53030;
+      --red-pale: #fff0ef;
+      --shadow: 0 12px 34px rgba(24, 74, 101, 0.10);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 24px;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font-family: "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.85;
+    }
+
+    a { color: var(--blue-dark); }
+    a:hover { color: var(--navy); }
+    img { max-width: 100%; height: auto; }
+    code, kbd {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92em;
+    }
+
+    code {
+      padding: 0.12em 0.36em;
+      border: 1px solid #dbe7ec;
+      border-radius: 5px;
+      background: #f7fafb;
+    }
+
+    kbd {
+      padding: 0.14em 0.42em;
+      border: 1px solid #9fb3bd;
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      background: #fff;
+      color: var(--navy);
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -80px;
+      left: 16px;
+      z-index: 10;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .skip-link:focus { top: 12px; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      background:
+        radial-gradient(circle at 84% 20%, rgba(255,255,255,.26) 0 7%, transparent 7.2%),
+        radial-gradient(circle at 90% 36%, rgba(255,255,255,.17) 0 11%, transparent 11.2%),
+        linear-gradient(132deg, #075a89 0%, #099bcf 58%, #62cbe6 100%);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -120px;
+      bottom: -150px;
+      width: 420px;
+      height: 260px;
+      border: 36px solid rgba(255,255,255,.13);
+      border-radius: 50%;
+      transform: rotate(-12deg);
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      width: min(1160px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 56px 0 48px;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: .82;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.25rem, 6vw, 4.25rem);
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+    }
+
+    .hero-copy {
+      max-width: 720px;
+      margin: 18px 0 0;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.75;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 26px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .hero-meta li {
+      padding: 6px 12px;
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px;
+      background: rgba(4,55,87,.22);
+      font-size: .88rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 42px;
+      width: min(1160px, calc(100% - 40px));
+      margin: 38px auto 72px;
+      align-items: start;
+    }
+
+    .toc {
+      position: sticky;
+      top: 20px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 8px 24px rgba(24,74,101,.06);
+    }
+
+    .toc-title {
+      margin: 0 0 10px;
+      color: var(--navy);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .toc ol {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .toc a {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+      text-decoration: none;
+    }
+
+    .toc a:hover, .toc a:focus-visible {
+      color: var(--navy);
+      background: var(--blue-pale);
+    }
+
+    main { min-width: 0; }
+
+    section {
+      margin: 0 0 52px;
+      padding: 34px clamp(22px, 4vw, 44px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    h2, h3, h4 {
+      color: var(--navy);
+      line-height: 1.38;
+    }
+
+    h2 {
+      margin: 0 0 22px;
+      font-size: clamp(1.55rem, 3vw, 2.05rem);
+      letter-spacing: -.02em;
+    }
+
+    h2 .num {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--blue);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      margin: 34px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--sky);
+      font-size: 1.25rem;
+    }
+
+    h4 { margin: 26px 0 8px; font-size: 1.05rem; }
+    p { margin: 0 0 16px; }
+    ul, ol { padding-left: 1.45em; }
+    li + li { margin-top: 7px; }
+
+    .lead {
+      margin-top: -8px;
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .quick-start {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 28px 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: quick;
+    }
+
+    .quick-start li {
+      position: relative;
+      min-height: 148px;
+      margin: 0;
+      padding: 54px 18px 18px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: linear-gradient(155deg, #fff, var(--blue-pale));
+      counter-increment: quick;
+    }
+
+    .quick-start li::before {
+      content: counter(quick, decimal-leading-zero);
+      position: absolute;
+      top: 13px;
+      left: 17px;
+      color: var(--blue);
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .quick-start strong { display: block; color: var(--navy); }
+
+    .callout {
+      margin: 22px 0;
+      padding: 17px 19px;
+      border-left: 5px solid var(--blue);
+      border-radius: 0 10px 10px 0;
+      background: var(--blue-pale);
+    }
+
+    .callout strong { color: var(--navy); }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout.warning { border-color: #e59a17; background: var(--amber-pale); }
+    .callout.danger { border-color: #d05757; background: var(--red-pale); }
+    .callout.success { border-color: #2d9a68; background: var(--green-pale); }
+
+    figure { margin: 26px 0; }
+
+    figure img {
+      display: block;
+      width: 100%;
+      border: 1px solid #a7c6d4;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(12,71,103,.12);
+    }
+
+    figcaption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .88rem;
+      text-align: center;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 20px 0 26px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      font-size: .94rem;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    tr:last-child th, tr:last-child td { border-bottom: 0; }
+    th { color: var(--navy); background: #eff8fb; font-weight: 700; }
+
+    .mode-grid, .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 22px 0;
+    }
+
+    .mode-card, .status-card {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .mode-card h3, .status-card h3 {
+      margin: 0 0 9px;
+      padding: 0;
+      border: 0;
+      font-size: 1.05rem;
+    }
+
+    .mode-card p, .status-card p { margin: 0; color: var(--muted); font-size: .92rem; }
+    .mode-card.recommended { border-top: 5px solid var(--blue); }
+    .mode-card.precise { border-top: 5px solid #2d9a68; }
+    .mode-card.sensitive { border-top: 5px solid #e59a17; }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 9px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: var(--blue-dark);
+      background: var(--blue-pale);
+      font-size: .75rem;
+      font-weight: 700;
+    }
+
+    .steps { counter-reset: steps; list-style: none; padding: 0; }
+    .steps > li {
+      position: relative;
+      min-height: 48px;
+      margin: 16px 0;
+      padding: 8px 0 8px 56px;
+      counter-increment: steps;
+    }
+
+    .steps > li::before {
+      content: counter(steps);
+      position: absolute;
+      left: 0;
+      top: 3px;
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--blue);
+      font-weight: 800;
+    }
+
+    .status-grid { grid-template-columns: repeat(2, 1fr); }
+    .status-card { border-left: 5px solid var(--line); }
+    .status-card.first { border-left-color: #4c8fac; }
+    .status-card.same { border-left-color: #2d9a68; }
+    .status-card.changed { border-left-color: #e27d31; }
+    .status-card.error { border-left-color: #d05757; }
+
+    details {
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    summary {
+      padding: 15px 18px;
+      color: var(--navy);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    details[open] summary { border-bottom: 1px solid var(--line); background: #f4fafc; }
+    .details-body { padding: 17px 18px 5px; }
+
+    .mini-flow {
+      display: flex;
+      align-items: stretch;
+      gap: 9px;
+      margin: 24px 0;
+    }
+
+    .mini-flow div {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      color: var(--navy);
+      background: var(--blue-pale);
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .mini-flow span { align-self: center; color: var(--blue); font-size: 1.3rem; }
+
+    .footer {
+      padding: 34px 20px 48px;
+      color: #d9edf5;
+      background: var(--navy);
+      text-align: center;
+    }
+
+    .footer strong { color: #fff; }
+    .footer p { margin: 4px 0; }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; gap: 22px; }
+      .toc { position: static; }
+      .toc ol { columns: 2; }
+      .quick-start, .mode-grid { grid-template-columns: 1fr; }
+      .quick-start li { min-height: 0; }
+    }
+
+    @media (max-width: 620px) {
+      body { font-size: 15px; }
+      .hero-inner, .layout { width: min(100% - 24px, 1160px); }
+      .hero-inner { padding: 38px 0 36px; }
+      .layout { margin-top: 18px; }
+      section { padding: 26px 18px; margin-bottom: 24px; border-radius: 12px; }
+      .toc ol { columns: 1; }
+      .status-grid { grid-template-columns: 1fr; }
+      .mini-flow { display: grid; }
+      .mini-flow span { transform: rotate(90deg); text-align: center; }
+      th, td { min-width: 130px; padding: 10px; }
+    }
+
+    @media print {
+      body { background: #fff; font-size: 11pt; }
+      .hero { color: var(--ink); background: #fff; border-bottom: 2px solid var(--navy); }
+      .hero-inner { padding: 24px 0; }
+      .hero-meta li { border-color: var(--line); background: #fff; }
+      .layout { display: block; width: 100%; margin: 0; }
+      .toc { display: none; }
+      section { break-inside: avoid; margin: 0; padding: 24px 0; border: 0; border-radius: 0; box-shadow: none; }
+      .footer { color: var(--ink); background: #fff; border-top: 1px solid var(--line); }
+      .footer strong { color: var(--ink); }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">本文へ移動</a>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Argus official guide</p>
+      <h1>ユーザーマニュアル</h1>
+      <p class="hero-copy">登録したWebページを、必要なときにまとめて確認。初めて使う方も、判定に迷った方も、このページだけで操作と考え方が分かります。</p>
+      <ul class="hero-meta" aria-label="対応情報">
+        <li>Windows 10 / 11</li>
+        <li>手動チェック専用</li>
+        <li>HTML・CSSセレクタ対応</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="目次">
+      <p class="toc-title">Contents</p>
+      <ol>
+        <li><a href="#start">1. はじめに</a></li>
+        <li><a href="#quickstart">2. 最初のチェック</a></li>
+        <li><a href="#main-screen">3. メイン画面</a></li>
+        <li><a href="#modes">4. 監視モードを選ぶ</a></li>
+        <li><a href="#register">5. 登録する</a></li>
+        <li><a href="#check">6. チェックする</a></li>
+        <li><a href="#results">7. 結果を読む</a></li>
+        <li><a href="#manage">8. 編集・削除・開く</a></li>
+        <li><a href="#data">9. データと安全性</a></li>
+        <li><a href="#limits">10. 対応範囲</a></li>
+        <li><a href="#trouble">11. 困ったとき</a></li>
+      </ol>
+    </nav>
+
+    <main id="content">
+      <section id="start">
+        <h2><span class="num">Section 01</span>はじめに</h2>
+        <p class="lead">Argusは、Webページを自動巡回する監視サービスではなく、あなたがボタンを押したときに更新の有無をまとめて調べるWindowsアプリです。</p>
+
+        <div class="callout success">
+          <p><strong>Argusが向いていること</strong><br>ブログ、お知らせ、配布ページ、更新履歴など、ログイン不要の公開ページを定期的に確認すること。</p>
+        </div>
+
+        <h3>必要なもの</h3>
+        <ul>
+          <li>Windows 10 または Windows 11（x64）</li>
+          <li>インターネット接続</li>
+          <li><code>http://</code> または <code>https://</code> で公開されている確認先ページ</li>
+        </ul>
+
+        <h3>起動方法</h3>
+        <p>配布された <code>Argus.WinForms.exe</code> をダブルクリックします。初回起動時は一覧が空なので、まず監視対象を1件登録します。</p>
+        <div class="callout warning">
+          <p><strong>自動ではチェックされません。</strong> 更新を確認したいときにArgusを起動し、「全件チェック」または「選択をチェック」を実行してください。</p>
+        </div>
+      </section>
+
+      <section id="quickstart">
+        <h2><span class="num">Section 02</span>3ステップで最初のチェック</h2>
+        <p class="lead">迷ったら、最初は標準の「HTMLテキスト比較」を使います。</p>
+        <ol class="quick-start">
+          <li><strong>「追加」を押す</strong>名前とURLを入力し、監視モードは「HTMLテキスト比較」のまま保存します。</li>
+          <li><strong>登録した行を選ぶ</strong>一覧で登録した監視対象を1回クリックします。</li>
+          <li><strong>「選択をチェック」を押す</strong>最初の成功時は「初回取得」と表示されます。</li>
+        </ol>
+        <div class="mini-flow" aria-label="更新判定の流れ">
+          <div>1回目<br>初回取得</div><span aria-hidden="true">→</span>
+          <div>2回目以降<br>前回と比較</div><span aria-hidden="true">→</span>
+          <div>更新なし<br>または 更新あり</div>
+        </div>
+        <p>「初回取得」は異常ではありません。比較するための基準を初めて保存した、という意味です。次回の正常なチェックから更新の有無を判定します。</p>
+      </section>
+
+      <section id="main-screen">
+        <h2><span class="num">Section 03</span>メイン画面の見方</h2>
+        <figure>
+          <img src="main.webp" width="800" height="531" alt="Argusのメイン画面。上部にチェックと管理のボタン、中央に監視対象一覧、下部にメッセージとバージョンを表示">
+          <figcaption>メイン画面。個々の名前とURLはプライバシー保護のため画像内で伏せています。</figcaption>
+        </figure>
+
+        <h3>上部のボタン</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">ボタン</th><th scope="col">できること</th><th scope="col">利用できる条件</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">全件チェック</th><td>有効な監視対象をすべて確認</td><td>有効な対象が1件以上ある</td></tr>
+              <tr><th scope="row">選択をチェック</th><td>選択中の有効な対象だけを確認</td><td>有効な行を選択している</td></tr>
+              <tr><th scope="row">ブラウザで開く</th><td>登録URLを既定ブラウザで表示</td><td>1件だけ選択している</td></tr>
+              <tr><th scope="row">追加</th><td>新しい監視対象を登録</td><td>常時利用可能</td></tr>
+              <tr><th scope="row">編集</th><td>登録内容を変更</td><td>チェック中でない1件を選択</td></tr>
+              <tr><th scope="row">削除</th><td>登録と比較データを削除</td><td>チェック中でない1件を選択</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>一覧の項目</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">項目</th><th scope="col">意味</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">有効</th><td>「はい」はチェック対象。「いいえ」は全件・選択チェックの対象外</td></tr>
+              <tr><th scope="row">名前</th><td>登録時に付けた識別名</td></tr>
+              <tr><th scope="row">URL</th><td>確認するWebページ</td></tr>
+              <tr><th scope="row">状態</th><td>現在の起動中に得た最新結果。実行中は「チェック中」も表示</td></tr>
+              <tr><th scope="row">最終チェック</th><td>最後にチェックが完了した日時。未実行なら「—」</td></tr>
+              <tr><th scope="row">エラー</th><td>失敗理由。エラーがなければ「—」</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>行をクリックすると選択できます。複数選ぶときは <kbd>Ctrl</kbd> を押しながらクリックします。選択件数は一覧右上で確認できます。</p>
+        <p>画面下部には操作結果、エラーの概要、コピーライト、バージョンが表示されます。開発用のDebugビルドでは <code>DEBUG</code> も表示されます。</p>
+      </section>
+
+      <section id="modes">
+        <h2><span class="num">Section 04</span>監視モードを選ぶ</h2>
+        <p class="lead">「ページの何が変わったら更新とみなすか」を監視モードで決めます。</p>
+        <div class="mode-grid">
+          <article class="mode-card recommended">
+            <span class="badge">まずはこちら</span>
+            <h3>HTMLテキスト比較</h3>
+            <p>画面に現れる文章を中心に比較。タグ、コメント、script、style、空白や改行だけの違いを除外します。</p>
+          </article>
+          <article class="mode-card precise">
+            <span class="badge">一部分だけ</span>
+            <h3>CSSセレクタ比較</h3>
+            <p>指定した見出しや記事一覧など、一致する要素だけを比較。不要な変化を避けたい場合に最適です。</p>
+          </article>
+          <article class="mode-card sensitive">
+            <span class="badge">すべての変化</span>
+            <h3>HTML全体比較</h3>
+            <p>取得したHTMLをそのまま比較。コメント、属性、空白、生成時刻などの微細な変化も検知します。</p>
+          </article>
+        </div>
+
+        <h3>選び方</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">確認したいこと</th><th scope="col">おすすめ</th></tr></thead>
+            <tbody>
+              <tr><td>ブログやお知らせの文章が変わったか</td><td><strong>HTMLテキスト比較</strong></td></tr>
+              <tr><td>記事一覧や特定の見出しだけが変わったか</td><td><strong>CSSセレクタ比較</strong></td></tr>
+              <tr><td>HTMLの属性やコメントを含む変更を漏らしたくない</td><td><strong>HTML全体比較</strong></td></tr>
+              <tr><td>毎回「更新あり」になってしまう</td><td>HTMLテキスト比較、改善しなければCSSセレクタ比較</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warning">
+          <p><strong>HTML全体比較は最も敏感です。</strong> 表示内容が同じでも、アクセスのたびに変わる属性、生成時刻、コメント、空白などを更新として検知することがあります。</p>
+        </div>
+      </section>
+
+      <section id="register">
+        <h2><span class="num">Section 05</span>監視対象を登録する</h2>
+        <ol class="steps">
+          <li>メイン画面の「追加」をクリックします。</li>
+          <li>名前と、<code>http://</code> または <code>https://</code> から始まる絶対URLを入力します。</li>
+          <li>目的に合う監視モードを選びます。CSSセレクタ比較の場合だけ、CSSセレクタも入力します。</li>
+          <li>「保存」をクリックし、メイン画面の一覧に追加されたことを確認します。</li>
+        </ol>
+
+        <h3>入力項目</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">項目</th><th scope="col">必須</th><th scope="col">説明</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">名前</th><td>はい</td><td>一覧で見分けやすい名前</td></tr>
+              <tr><th scope="row">URL</th><td>はい</td><td><code>http://</code> または <code>https://</code> で始まるページURL</td></tr>
+              <tr><th scope="row">監視モード</th><td>はい</td><td>HTMLテキスト、HTML全体、CSSセレクタから選択</td></tr>
+              <tr><th scope="row">CSSセレクタ</th><td>条件付き</td><td>CSSセレクタ比較を選んだ場合のみ必須</td></tr>
+              <tr><th scope="row">この監視対象を有効にする</th><td>いいえ</td><td>オンならチェック対象。新規登録時はオン</td></tr>
+              <tr><th scope="row">メモ</th><td>いいえ</td><td>用途や確認ポイントなどの自由記入欄</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>入力に問題がある場合は該当欄にエラーが表示され、保存されません。「キャンセル」をクリックすると、入力内容を保存せずメイン画面へ戻ります。</p>
+
+        <h3 id="whole-html-example">例1：HTML全体比較を試す</h3>
+        <figure>
+          <img src="entry.webp" width="636" height="539" alt="監視対象追加画面にExample DomainのURLとHTML全体比較を設定した例">
+          <figcaption>HTML全体比較の入力例</figcaption>
+        </figure>
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr><th scope="row">名前</th><td><code>Example Domain（HTML全体）</code></td></tr>
+              <tr><th scope="row">URL</th><td><code>https://example.com/</code></td></tr>
+              <tr><th scope="row">監視モード</th><td>HTML全体比較</td></tr>
+              <tr><th scope="row">有効</th><td>オン</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>保存後に選択チェックを実行します。最初は「初回取得」、同じHTMLを再度取得できれば次回は「更新なし」になります。</p>
+
+        <h3 id="selector-example">例2：見出しだけを確認する</h3>
+        <figure>
+          <img src="entry-css-selector.webp" width="636" height="539" alt="監視対象追加画面にExample DomainのURL、CSSセレクタ比較、h1を設定した例">
+          <figcaption>CSSセレクタ比較の入力例</figcaption>
+        </figure>
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr><th scope="row">名前</th><td><code>Example Domain（見出し）</code></td></tr>
+              <tr><th scope="row">URL</th><td><code>https://example.com/</code></td></tr>
+              <tr><th scope="row">監視モード</th><td>CSSセレクタ比較</td></tr>
+              <tr><th scope="row">CSSセレクタ</th><td><code>h1</code></td></tr>
+              <tr><th scope="row">有効</th><td>オン</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>CSSセレクタの例</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">入力例</th><th scope="col">対象</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>#news</code></th><td><code>id="news"</code> の要素</td></tr>
+              <tr><th scope="row"><code>.news-list</code></th><td><code>class="news-list"</code> を持つすべての要素</td></tr>
+              <tr><th scope="row"><code>main article</code></th><td><code>main</code> 内のすべての <code>article</code></td></tr>
+              <tr><th scope="row"><code>ul.items &gt; li</code></th><td><code>class="items"</code> の <code>ul</code> 直下にあるすべての <code>li</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>一致した要素は、開始タグ、属性、内容、終了タグを含む外側HTMLとして比較されます。複数一致した場合は、ページ内の順番ですべてが対象です。要素の追加・削除・並び替え・属性変更も更新として検知されます。</p>
+        <div class="callout danger">
+          <p>セレクタの書式が不正、または一致する要素がない場合は「エラー」です。ArgusはJavaScriptを実行しないため、JavaScript実行後にだけ作られる要素は選択できません。</p>
+        </div>
+      </section>
+
+      <section id="check">
+        <h2><span class="num">Section 06</span>更新をチェックする</h2>
+        <h3>すべてチェック</h3>
+        <p>「全件チェック」をクリックすると、「有効」が「はい」の監視対象をすべて確認します。無効な対象は実行されません。</p>
+
+        <h3>選んだものだけチェック</h3>
+        <ol>
+          <li>一覧で確認したい行を選択します。</li>
+          <li>複数選ぶ場合は <kbd>Ctrl</kbd> を押しながら各行をクリックします。</li>
+          <li>「選択をチェック」をクリックします。</li>
+        </ol>
+        <p>選択した行のうち、有効な監視対象だけが実行されます。</p>
+
+        <h3>チェック中の動作</h3>
+        <p>処理中も画面を操作でき、別の監視対象のチェックやブラウザ表示を開始できます。同じ対象を重複してチェックすることも可能です。</p>
+        <div class="callout">
+          <p>状態欄の「チェック中 ×2」は、その対象に2件のチェックが実行中であることを表します。重複時は、最後に完了した結果が一覧に表示されます。</p>
+        </div>
+      </section>
+
+      <section id="results">
+        <h2><span class="num">Section 07</span>チェック結果を読む</h2>
+        <div class="status-grid">
+          <article class="status-card"><h3>未確認</h3><p>Argusを起動してから、まだチェックしていません。</p></article>
+          <article class="status-card first"><h3>初回取得</h3><p>比較基準がなかったため、今回の内容を基準として保存しました。</p></article>
+          <article class="status-card same"><h3>更新なし</h3><p>今回と前回の正常なチェック内容が同じです。</p></article>
+          <article class="status-card changed"><h3>更新あり</h3><p>今回の内容が前回の正常なチェック内容から変わっています。</p></article>
+          <article class="status-card error"><h3>エラー</h3><p>取得または比較に失敗しました。理由は一覧の「エラー」列に表示されます。</p></article>
+        </div>
+        <p>正常に完了した内容は自動保存され、次回の比較に使われます。エラー時は前回の正常な比較データを上書きしません。通信状態、URL、CSSセレクタなどを確認して再実行してください。</p>
+        <div class="callout warning">
+          <p>Argusは差分箇所を表示しません。「更新あり」になったら対象を選択し、「ブラウザで開く」で実際のページを確認してください。</p>
+        </div>
+      </section>
+
+      <section id="manage">
+        <h2><span class="num">Section 08</span>編集・削除・ブラウザ表示</h2>
+        <h3>ブラウザで開く</h3>
+        <p>一覧から1件を選択して「ブラウザで開く」をクリックすると、登録URLがWindowsの既定ブラウザで開きます。</p>
+
+        <h3>登録内容を編集する</h3>
+        <ol>
+          <li>チェック中でない監視対象を1件選択します。</li>
+          <li>「編集」をクリックします。</li>
+          <li>内容を変更して「保存」をクリックします。</li>
+        </ol>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">変更内容</th><th scope="col">次回チェック</th></tr></thead>
+            <tbody>
+              <tr><td>URL、監視モード、CSSセレクタ</td><td>以前の比較データを破棄し、次の正常チェックは「初回取得」</td></tr>
+              <tr><td>名前、有効状態、メモのみ</td><td>以前の比較データを引き継ぐ</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>一時的に対象から外すだけなら、「この監視対象を有効にする」をオフにして保存します。登録を残したままチェック対象から除外できます。</p>
+
+        <h3>削除する</h3>
+        <ol>
+          <li>チェック中でない監視対象を1件選択します。</li>
+          <li>「削除」をクリックします。</li>
+          <li>確認画面で対象名を確かめて「はい」をクリックします。</li>
+        </ol>
+        <div class="callout danger">
+          <p><strong>削除は元に戻せません。</strong> 登録内容と、その対象の前回チェックデータが削除されます。</p>
+        </div>
+      </section>
+
+      <section id="data">
+        <h2><span class="num">Section 09</span>データの保存と安全性</h2>
+        <p>監視対象と前回の正常なチェック結果は、次のJSONファイルに自動保存されます。</p>
+        <div class="callout"><p><code>%APPDATA%\Argus\targets.json</code></p></div>
+        <p>追加、編集、削除、正常なチェックの完了時に更新されます。通常、このファイルを手動で編集する必要はありません。</p>
+        <ul>
+          <li>チェックがエラーになっても、前回の正常な比較データは保持されます。</li>
+          <li>登録URLなどを外部データベースへ送信する機能はありません。</li>
+          <li>更新確認時は、登録したWebページへHTTP/HTTPSでアクセスします。</li>
+        </ul>
+        <div class="callout danger">
+          <p>保存ファイルが空、不正、または未対応形式で起動時に読み込めない場合、既存データ保護のため主要な操作は無効になり、ファイルは上書きされません。</p>
+        </div>
+      </section>
+
+      <section id="limits">
+        <h2><span class="num">Section 10</span>できること・できないこと</h2>
+        <h3>対応していること</h3>
+        <ul>
+          <li>ログイン不要のHTTP/HTTPSページの手動チェック</li>
+          <li>HTMLテキスト、HTML全体、CSSセレクタによる比較</li>
+          <li>全件または選択対象のチェック</li>
+          <li>結果とエラー理由の一覧表示</li>
+        </ul>
+        <h3>初期版では対応していないこと</h3>
+        <ul>
+          <li>自動監視、常駐監視、スケジュール実行、通知</li>
+          <li>ログイン、Cookie、CAPTCHAが必要なページ</li>
+          <li>JavaScript実行後に内容が生成されるSPAの解析</li>
+          <li>変更箇所の差分表示、チェック履歴</li>
+        </ul>
+        <div class="callout">
+          <p>1回の取得は30秒でタイムアウトします。多数の対象を実行すると最大4件を同時取得し、残りは順番に処理します。アプリ終了時は実行中・待機中のチェックがキャンセルされます。</p>
+        </div>
+      </section>
+
+      <section id="trouble">
+        <h2><span class="num">Section 11</span>困ったとき</h2>
+
+        <details open>
+          <summary>チェックボタンを押せない</summary>
+          <div class="details-body"><p>「全件チェック」は有効な対象が1件もないと利用できません。「選択をチェック」は有効な行を選択していないと利用できません。登録の有効状態と選択件数を確認してください。</p></div>
+        </details>
+
+        <details>
+          <summary>編集または削除を押せない</summary>
+          <div class="details-body"><p>監視対象を1件だけ選択してください。その対象がチェック中なら、すべてのチェックが完了するまで待ってください。</p></div>
+        </details>
+
+        <details>
+          <summary>「エラー」と表示される</summary>
+          <div class="details-body"><p>一覧の「エラー」列と画面下部のメッセージを確認します。インターネット接続、URL、ページの公開状態、CSSセレクタを確認して再実行してください。前回の正常な比較データは保持されています。</p></div>
+        </details>
+
+        <details>
+          <summary>毎回「更新あり」になる</summary>
+          <div class="details-body"><p>日付、閲覧数、広告、生成時刻など、アクセスのたびに変わる部分が含まれている可能性があります。HTML全体比較ならHTMLテキスト比較へ変更します。それでも続く場合はCSSセレクタ比較を選び、確認したい要素の <code>id</code>、<code>class</code>、タグ名などを指定してください。</p></div>
+        </details>
+
+        <details>
+          <summary>CSSセレクタ比較がエラーになる</summary>
+          <div class="details-body"><p>セレクタの書式と、対象ページの取得時点のHTMLに一致する要素があるか確認します。ブラウザ上では見えていても、JavaScriptで後から生成される要素はArgusでは取得できません。</p></div>
+        </details>
+
+        <details>
+          <summary>ブラウザで開けない</summary>
+          <div class="details-body"><p>登録URLと、Windowsの既定ブラウザ設定を確認してください。URLを編集した場合は、次の正常なチェックが「初回取得」になる点にも注意してください。</p></div>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <p><strong>Argus ユーザーマニュアル</strong></p>
+    <p>Copyright © 2026 SIA-ACT</p>
+  </footer>
+</body>
+</html>
