@@ -981,10 +981,13 @@ dotnet publish Argus.WinForms/Argus.WinForms.csproj `
   -c Release `
   -r win-x64 `
   --self-contained true `
-  -p:PublishSingleFile=true
+  -p:PublishSingleFile=true `
+  -p:IncludeNativeLibrariesForSelfExtract=true `
+  -p:DebugType=None `
+  -p:DebugSymbols=false
 ```
 
-single-file化によって動作差異がないことを、リリース確認タスクで手動検証します。
+ネイティブライブラリを実行ファイルへ格納し、配布に不要なPDBを生成しないことで、配布物を単一の実行ファイルにします。single-file化によって動作差異がないことを、リリース確認タスクで手動検証します。
 
 ---
 

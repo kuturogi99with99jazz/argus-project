@@ -765,7 +765,9 @@ dotnet publish Argus.WinForms/Argus.WinForms.csproj `
   -r win-x64 `
   --self-contained true `
   -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true
+  -p:IncludeNativeLibrariesForSelfExtract=true `
+  -p:DebugType=None `
+  -p:DebugSymbols=false
 ```
 
 #### 手動確認
