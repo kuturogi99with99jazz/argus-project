@@ -989,6 +989,15 @@ dotnet publish Argus.WinForms/Argus.WinForms.csproj `
 
 ネイティブライブラリを実行ファイルへ格納し、配布に不要なPDBを生成しないことで、配布物を単一の実行ファイルにします。single-file化によって動作差異がないことを、リリース確認タスクで手動検証します。
 
+Avalonia PoCも `Argus.Avalonia/Properties/PublishProfiles/Windows-x64-SingleFile.pubxml` を使用し、Windows x64向けのself-contained single-file executableとして発行します。プロファイルは `RuntimeIdentifier=win-x64`、`SelfContained=true`、`PublishSingleFile=true`、`IncludeNativeLibrariesForSelfExtract=true`、`DebugSymbols=false` を固定し、Visual Studio 2022の発行画面から選択できるようにします。Avaloniaとリフレクションを使用する依存コードの互換性を優先し、`PublishTrimmed` と `PublishReadyToRun` は無効にします。発行先は `artifacts/Argus-Avalonia-win-x64-single/` とし、配布対象を `Argus.Avalonia.exe` 1ファイルに限定します。
+
+Avalonia PoCの同等CLIコマンド:
+
+```powershell
+dotnet publish Argus.Avalonia/Argus.Avalonia.csproj `
+  -p:PublishProfile=Windows-x64-SingleFile
+```
+
 ---
 
 ## 15. 要件トレーサビリティ
@@ -1238,6 +1247,7 @@ Windowsでの主要検証環境:
 - WinForms版とAvalonia版をそれぞれスタートアッププロジェクトにしてF5起動する
 - Test ExplorerからCore、WinForms、Avaloniaの全テストを実行する
 - Avalonia版の全機能とWinForms版の回帰を手動確認する
+- `Windows-x64-SingleFile` 発行プロファイルを選択して発行し、`artifacts/Argus-Avalonia-win-x64-single/Argus.Avalonia.exe` だけで起動できることを確認する
 
 macOSでの軽量確認環境:
 

@@ -1187,8 +1187,8 @@ Avalonia導入難易度: 中
 ### T-028 Avalonia PoC総合検証と評価
 
 - ステータス: 進行中
-- 対応要件: FR-016, NFR-009, NFR-010
-- 対応設計: 18.8、18.9
+- 対応要件: FR-016, NFR-002, NFR-009, NFR-010
+- 対応設計: 14、18.8、18.9
 - 依存タスク: T-027
 
 #### Windows検証
@@ -1198,6 +1198,8 @@ Avalonia導入難易度: 中
 - Test ExplorerからCore、WinForms、Avaloniaの全テストを実行する
 - Avalonia版の全機能とWinForms版の回帰を手動確認する
 - Avalonia版のメイン画面、監視対象編集画面、メッセージ画面、タスクバー、実行ファイルで専用アプリアイコンを確認する
+- `Windows-x64-SingleFile` 発行プロファイルからWindows x64向けの自己完結型単一EXEを発行し、.NETランタイムを別途必要とせず起動できることを確認する
+- 発行先に `Argus.Avalonia.exe` 以外の配布必須ファイルが残らないことを確認する
 
 #### macOS軽量確認
 
@@ -1221,6 +1223,8 @@ Avalonia導入難易度: 中
 - 実装画面: メイン画面、監視対象追加／編集画面、削除確認、操作エラー表示
 - Windows自動確認: NuGet復元成功、Visual Studio Community 2022 17.14.34でDebug / Releaseとも6プロジェクトのビルド成功、`dotnet test`でCore 67件、WinForms 15件、Avalonia 14件の計96件成功
 - Windows起動確認: `dotnet run`でAvalonia版が即時終了せず起動を継続することを確認
+- Windows発行確認: `Windows-x64-SingleFile` プロファイルによるCLI発行が成功し、`artifacts/Argus-Avalonia-win-x64-single/` の配布物が98,331,880バイトの `Argus.Avalonia.exe` 1ファイルだけであることを確認した
+- Windows発行物起動確認: 発行した `Argus.Avalonia.exe` を直接起動し、5秒後もプロセスが正常に稼働していることを確認した。Visual Studio 2022の発行画面からの操作と別PCでの起動は手動確認に残す
 - Windows表示確認: schema v1 JSONの監視対象3件が全7列へ表示され、ライト／ダーク切替後も文字とボタンのコントラストを維持することを確認
 - Windows列幅確認: 「名前」列の境界ダブルクリックにより表示幅が180pxから367pxへ自動調整されることを確認
 - 未確認: Visual StudioのF5起動、Test Explorer操作、Avalonia全機能とWinForms回帰の手動確認、macOS / VS Code確認
@@ -1230,6 +1234,7 @@ Avalonia導入難易度: 中
 
 - 要件定義書のAvalonia UI PoC完了判定をすべて確認できる
 - Windowsの全検証とmacOSの軽量確認結果が記録されている
+- Avalonia版の自己完結型単一EXEがWindows x64向けに発行され、単独起動できる
 - 要件、設計、タスク、実装、テストの整合が確認されている
 
 ---

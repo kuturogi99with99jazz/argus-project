@@ -410,11 +410,13 @@ Argus は、既存 WinForms 版と並存し、同じ Core ロジックを利用�
 
 ### NFR-002 配布
 
-配布形式は、self-contained single-file executable を候補とします。
+Windows版の配布形式は、.NETランタイムを同梱したself-contained single-file executableとします。WinForms正式版に加え、Avalonia PoCもVisual Studio 2022の発行プロファイルからWindows x64向けの単一EXEを生成できるようにします。
 
 備考:
 
 - 初期配布対象はWindows x64とします。
+- Avalonia PoCのWindows発行物は `Argus.Avalonia.exe` 1ファイルとし、対象PCへの.NETランタイムの事前導入を不要とします。
+- Avalonia PoCでは互換性を優先してトリミングとReadyToRunを使用しません。
 - ファイルサイズと更新方法は要確認とします。
 
 ### NFR-003 データ永続化

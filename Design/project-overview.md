@@ -67,7 +67,7 @@ TDD では、設計とタスクに基づき、テスト可能な振る舞いを�
 - 言語: C#
 - フレームワーク: .NET 8
 - 保存形式: JSON
-- 配布形式: self-contained single-file exe を想定
+- 配布形式: WinForms正式版とAvalonia PoCの双方で、Windows x64向けself-contained single-file exe
 
 ---
 
@@ -82,6 +82,8 @@ dotnet run --project Argus.WinForms
 ```
 
 Windowsでの通常開発とAvalonia PoCの主要確認には Visual Studio Community 2022 を使用します。Avaloniaプロジェクト追加後は、同じ `Argus.sln` からWinForms版とAvalonia版をそれぞれスタートアッププロジェクトに設定し、F5起動、Debug / Releaseビルド、Test Explorerでの全テストを確認します。Avalonia用IDE拡張はXAML編集やプレビューの支援に限定し、ビルドの必須条件にはしません。
+
+Avalonia PoCのWindows配布確認では、Visual Studio 2022の `Windows-x64-SingleFile` 発行プロファイルを使用し、.NETランタイムを同梱した `Argus.Avalonia.exe` 1ファイルを `artifacts/Argus-Avalonia-win-x64-single/` へ生成します。
 
 macOSではVS Codeでリポジトリを開き、.NET 8 CLIによる復元、ビルド、`dotnet run`での起動を軽く確認します。macOSでの全機能網羅、UI詳細、配布パッケージ検証は行いません。
 
