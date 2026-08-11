@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Argus.Avalonia.Views.MessageDialogWindow"
+        Icon="avares://Argus.Avalonia/Assets/argus-app-icon.ico"
         Width="460"
         SizeToContent="Height"
         CanResize="False"

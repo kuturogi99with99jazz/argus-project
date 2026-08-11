@@ -5,6 +5,7 @@
         x:Class="Argus.Avalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Argus - Avalonia PoC"
+        Icon="avares://Argus.Avalonia/Assets/argus-app-icon.ico"
         Width="1120"
         Height="720"
         MinWidth="900"

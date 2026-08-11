@@ -4,6 +4,7 @@
         x:Class="Argus.Avalonia.Views.TargetEditWindow"
         x:DataType="vm:TargetEditViewModel"
         Title="{Binding Title}"
+        Icon="avares://Argus.Avalonia/Assets/argus-app-icon.ico"
         Width="560"
         SizeToContent="Height"
         CanResize="False"
