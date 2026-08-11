@@ -254,12 +254,12 @@ Argus/
     Forms/
     Presentation/
 
-  Argus.Avalonia/          # PoCで追加予定
+  Argus.Avalonia/          # PoCの代替フロントエンド
     Views/
     ViewModels/
     Services/
 
-  Argus.Avalonia.Tests/    # PoCで追加予定
+  Argus.Avalonia.Tests/    # PoCのViewModelテスト
     ViewModels/
 
   UI/

@@ -87,10 +87,10 @@ dotnet test Argus.sln
 | T-022 | OSS向けREADMEとイラストバナーの整備 | FR-001～FR-015, NFR-001～NFR-008 | T-021 | 完了 |
 | T-023 | READMEバナーのきもかわいいモンスター化 | FR-001～FR-015, NFR-001～NFR-008 | T-022 | 完了 |
 | T-024 | Avalonia PoC仕様・導入可否調査 | FR-016, NFR-009, NFR-010 | T-023 | 完了 |
-| T-025 | Avaloniaプロジェクトとテスト基盤 | FR-016, NFR-009, NFR-010 | T-024 | 未着手 |
-| T-026 | Avalonia ViewModelと表示変換 | FR-016, NFR-009 | T-025 | 未着手 |
-| T-027 | Avalonia全画面機能 | FR-016, NFR-009 | T-026 | 未着手 |
-| T-028 | Avalonia PoC総合検証と評価 | FR-016, NFR-009, NFR-010 | T-027 | 未着手 |
+| T-025 | Avaloniaプロジェクトとテスト基盤 | FR-016, NFR-009, NFR-010 | T-024 | 実装完了（F5確認待ち） |
+| T-026 | Avalonia ViewModelと表示変換 | FR-016, NFR-009 | T-025 | 完了 |
+| T-027 | Avalonia全画面機能 | FR-016, NFR-009 | T-026 | 実装完了（手動確認待ち） |
+| T-028 | Avalonia PoC総合検証と評価 | FR-016, NFR-009, NFR-010 | T-027 | 進行中 |
 
 ---
 
@@ -1049,7 +1049,7 @@ Avalonia導入難易度: 中
 
 ### T-025 Avaloniaプロジェクトとテスト基盤
 
-- ステータス: 未着手
+- ステータス: 実装完了（Visual Studio 2022でのF5確認待ち）
 - 対応要件: FR-016, NFR-009, NFR-010
 - 対応設計: 18.2、18.3、18.7、18.8
 - 依存タスク: T-024
@@ -1074,11 +1074,20 @@ Avalonia導入難易度: 中
 - Debug / Releaseのソリューションビルドと全テストが成功する
 - Core、WinForms、Avaloniaの依存方向が設計どおりである
 
+#### 実施結果（2026-08-11）
+
+- `Argus.Avalonia` と `Argus.Avalonia.Tests` を `net8.0` で追加し、`Argus.sln` に登録した
+- `Avalonia`、`Avalonia.Desktop`、`Avalonia.Themes.Fluent` を公式NuGetで `.NET 8` 対応の安定版と確認した `12.1.0` に固定した
+- 外部MVVMライブラリ、外部テーマ、外部DIコンテナーは追加していない
+- Visual Studio Community 2022 17.14.34によるDebug / Releaseの6プロジェクトビルドが成功した
+- `dotnet run` によるWindows起動スモーク確認では5秒後もプロセスが正常に継続した
+- Visual Studio 2022でWinForms版とAvalonia版を個別にF5起動する確認はT-028で実施する
+
 ---
 
 ### T-026 Avalonia ViewModelと表示変換
 
-- ステータス: 未着手
+- ステータス: 完了
 - 対応要件: FR-016, NFR-009
 - 対応設計: 18.3～18.6
 - 依存タスク: T-025
@@ -1109,11 +1118,18 @@ Avalonia導入難易度: 中
 - Coreの公開APIとJSON契約を変更せずにViewModelが動作する
 - 追加・変更した全テストが成功する
 
+#### 実施結果（2026-08-11）
+
+- ViewModel基底、同期／非同期コマンド、メイン、編集、一覧行の各ViewModelを追加した
+- 一覧表示変換、入力検証反映、CSSセレクタ欄、選択／起動エラー／チェック中の操作可否、Coreイベント反映、追加・削除・ブラウザ起動、非同期例外と再実行を14件のテストで検証した
+- 先行テストが未実装型を理由に失敗するRedを確認後、実装してGreenへ移行した
+- `Argus.Core` の公開APIとschema v1 JSON契約は変更していない
+
 ---
 
 ### T-027 Avalonia全画面機能
 
-- ステータス: 未着手
+- ステータス: 実装完了（Windows全機能手動確認待ち）
 - 対応要件: FR-016, NFR-009
 - 対応設計: 18.4～18.7
 - 依存タスク: T-026
@@ -1140,11 +1156,20 @@ Avalonia導入難易度: 中
 - schema v1 JSONを使用し、エラー時に正常データを破壊しない
 - WinForms版のビルド、テスト、既存操作に回帰がない
 
+#### 実施結果（2026-08-11）
+
+- メイン、監視対象編集、削除確認、操作エラーの各画面をXAMLで追加した
+- 一覧の複数選択、全件／選択チェック、ブラウザ起動、追加、編集、削除をViewModelへ接続した
+- Fluent ThemeのOSテーマ追従、文字による状態表示、アプリ情報とDebug表示を追加した
+- Coreイベントの画面反映だけをAvalonia Dispatcherへ分離し、終了時キャンセルと購読解除を実装した
+- Windows上の起動スモーク、警告なしビルド、自動テストは成功した
+- ライト／ダーク、フォーカス、全機能操作、WinForms版の手動回帰はT-028で確認する
+
 ---
 
 ### T-028 Avalonia PoC総合検証と評価
 
-- ステータス: 未着手
+- ステータス: 進行中
 - 対応要件: FR-016, NFR-009, NFR-010
 - 対応設計: 18.8、18.9
 - 依存タスク: T-027
@@ -1168,6 +1193,18 @@ Avalonia導入難易度: 中
 - 新規プロジェクト、追加パッケージ、再利用できたCore、Core変更箇所を記録する
 - Avalonia側の実装画面、WinForms版への影響、WindowsとmacOSの検証結果を記録する
 - 全面移行する場合の課題と全面移行推奨度（高 / 中 / 低）を記録する
+
+#### 現在の検証・評価記録（2026-08-11）
+
+- 新規プロジェクト: `Argus.Avalonia`、`Argus.Avalonia.Tests`
+- 追加パッケージ: `Avalonia`、`Avalonia.Desktop`、`Avalonia.Themes.Fluent` の各 `12.1.0`
+- 再利用したCore: `JsonTargetStore`、`WatchTargetRepository`、`WatchTargetManagementService`、`CheckCoordinator`、取得・抽出・ハッシュ各サービス、Coreモデル一式
+- Core変更: なし。WinForms変更: なし
+- 実装画面: メイン画面、監視対象追加／編集画面、削除確認、操作エラー表示
+- Windows自動確認: NuGet復元成功、Visual Studio Community 2022 17.14.34でDebug / Releaseとも6プロジェクトのビルド成功、`dotnet test`でCore 67件、WinForms 15件、Avalonia 14件の計96件成功
+- Windows起動確認: `dotnet run`でAvalonia版が即時終了せず起動を継続することを確認
+- 未確認: Visual StudioのF5起動、Test Explorer操作、Avalonia全機能とWinForms回帰の手動確認、macOS / VS Code確認
+- 暫定評価: Core再利用性は「高」、Avalonia導入難易度は「中」、全面移行推奨度は手動確認とmacOS確認が終わるまで未確定
 
 #### 完了条件
 
