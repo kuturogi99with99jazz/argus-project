@@ -1,17 +1,18 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Selection;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Argus.Avalonia.ViewModels;
 
 namespace Argus.Avalonia.Views;
 
-/// <summary>Avalonia PoCの監視対象一覧を表示するルート画面</summary>
+/// <summary>Avalonia PoCのメイン画面を表示するルート画面</summary>
 public sealed partial class MainWindow : Window
 {
-    /// <summary>XAMLレイアウトを読み込みメイン画面を初期化</summary>
+    /// <summary>XAMLレイアウトを読み込んでメイン画面を初期化</summary>
     public MainWindow() => AvaloniaXamlLoader.Load(this);
 
-    /// <summary>手動構築したViewModelを設定し終了時の購読解除を接続</summary>
+    /// <summary>依存注入済みViewModelを設定して画面破棄時の後始末を結び付ける</summary>
     public MainWindow(MainWindowViewModel viewModel)
         : this()
     {
@@ -19,13 +20,38 @@ public sealed partial class MainWindow : Window
         Closed += (_, _) => viewModel.Dispose();
     }
 
-    /// <summary>ListBoxの複数選択を画面操作可否へ同期</summary>
-    private void TargetList_SelectionChanged(object? sender, SelectionChangedEventArgs eventArgs)
+    /// <summary>DataGridの複数選択をViewModelへ同期</summary>
+    private void TargetGrid_SelectionChanged(object? sender, SelectionChangedEventArgs eventArgs)
     {
-        if (DataContext is MainWindowViewModel viewModel && sender is ListBox listBox)
+        if (DataContext is MainWindowViewModel viewModel && sender is DataGrid dataGrid)
         {
             viewModel.SetSelection(
-                listBox.SelectedItems?.OfType<WatchTargetRowViewModel>() ?? []);
+                dataGrid.SelectedItems?.OfType<WatchTargetRowViewModel>() ?? []);
+        }
+    }
+
+    /// <summary>列境界のダブルクリックを内容に応じた列幅へ変換</summary>
+    private void TargetGrid_DoubleTapped(object? sender, TappedEventArgs eventArgs)
+    {
+        if (sender is not DataGrid dataGrid)
+        {
+            return;
+        }
+
+        const double resizeGripWidth = 6;
+        var pointerX = eventArgs.GetPosition(dataGrid).X;
+        var columnBoundary = 0d;
+        foreach (var column in dataGrid.Columns.OrderBy(column => column.DisplayIndex))
+        {
+            columnBoundary += column.ActualWidth;
+            if (Math.Abs(pointerX - columnBoundary) > resizeGripWidth)
+            {
+                continue;
+            }
+
+            column.Width = DataGridLength.Auto;
+            eventArgs.Handled = true;
+            return;
         }
     }
 }

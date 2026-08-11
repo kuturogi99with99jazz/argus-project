@@ -4,12 +4,15 @@
         Width="460"
         SizeToContent="Height"
         CanResize="False"
-        WindowStartupLocation="CenterOwner">
-  <Grid Margin="22" RowDefinitions="Auto,Auto" RowSpacing="20">
-    <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
-    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button x:Name="CancelButton" Content="キャンセル" Click="CancelButton_Click" />
-      <Button x:Name="AcceptButton" Content="OK" Click="AcceptButton_Click" />
-    </StackPanel>
-  </Grid>
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppWindowBackgroundBrush}">
+  <Border Margin="18" Padding="20" Background="{DynamicResource AppPanelBackgroundBrush}" BorderBrush="{DynamicResource AppPanelBorderBrush}" BorderThickness="1">
+    <Grid RowDefinitions="Auto,Auto" RowSpacing="18">
+      <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
+      <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button x:Name="CancelButton" Content="キャンセル" Click="CancelButton_Click" />
+        <Button x:Name="AcceptButton" Classes="primary" Content="OK" Click="AcceptButton_Click" />
+      </StackPanel>
+    </Grid>
+  </Border>
 </Window>

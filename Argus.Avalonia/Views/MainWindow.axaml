@@ -1,84 +1,191 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
         xmlns:vm="using:Argus.Avalonia.ViewModels"
         x:Class="Argus.Avalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Argus - Avalonia PoC"
-        Width="960"
-        Height="600"
-        MinWidth="720"
-        MinHeight="420">
-  <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12">
-    <Grid ColumnDefinitions="*,Auto">
-      <StackPanel Spacing="4">
-        <TextBlock FontSize="28" FontWeight="SemiBold" Text="Argus" />
-        <TextBlock Opacity="0.72" Text="登録したWebページの更新を手動で確認します" />
-      </StackPanel>
-      <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-        <TextBlock HorizontalAlignment="Right" Text="Avalonia UI PoC" />
-        <TextBlock HorizontalAlignment="Right" FontWeight="Bold" IsVisible="{Binding IsDebug}" Text="DEBUG" />
-      </StackPanel>
-    </Grid>
-
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
-      <Border Padding="12,6" CornerRadius="6" Background="{DynamicResource ControlAltFillColorSecondaryBrush}">
-        <TextBlock Text="{Binding TargetSummary}" />
-      </Border>
-      <Border Padding="12,6" CornerRadius="6" Background="{DynamicResource ControlAltFillColorSecondaryBrush}">
-        <TextBlock Text="{Binding CheckingSummary}" />
-      </Border>
-      <Border Padding="12,6" CornerRadius="6" Background="{DynamicResource ControlAltFillColorSecondaryBrush}">
-        <TextBlock Text="{Binding SelectionSummary}" />
-      </Border>
-    </StackPanel>
-
-    <WrapPanel Grid.Row="2" Orientation="Horizontal">
-      <Button Margin="0,0,8,8" Command="{Binding CheckAllCommand}" Content="全件チェック" />
-      <Button Margin="0,0,8,8" Command="{Binding CheckSelectedCommand}" Content="選択項目をチェック" />
-      <Button Margin="0,0,8,8" Command="{Binding OpenBrowserCommand}" Content="ブラウザで開く" />
-      <Button Margin="0,0,8,8" Command="{Binding AddCommand}" Content="追加" />
-      <Button Margin="0,0,8,8" Command="{Binding EditCommand}" Content="編集" />
-      <Button Margin="0,0,8,8" Command="{Binding DeleteCommand}" Content="削除" />
-    </WrapPanel>
-
-    <Grid Grid.Row="3" RowDefinitions="Auto,*">
-      <Grid Margin="12,0,12,6" ColumnDefinitions="1.2*,1.8*,1.1*,0.6*,1.2*,1.4*" ColumnSpacing="10">
-        <TextBlock FontWeight="SemiBold" Text="名前" />
-        <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="URL" />
-        <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="監視モード" />
-        <TextBlock Grid.Column="3" FontWeight="SemiBold" Text="有効" />
-        <TextBlock Grid.Column="4" FontWeight="SemiBold" Text="状態" />
-        <TextBlock Grid.Column="5" FontWeight="SemiBold" Text="最終チェック / エラー" />
+        Width="1120"
+        Height="720"
+        MinWidth="900"
+        MinHeight="540"
+        Background="{DynamicResource AppWindowBackgroundBrush}">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+    <Border Padding="24,18"
+            Background="{DynamicResource AppHeaderBackgroundBrush}">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <PathIcon Width="34"
+                    Height="34"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource AppHeaderForegroundBrush}"
+                    Data="{StaticResource IconArgus}" />
+          <StackPanel Grid.Column="1" Spacing="3">
+            <TextBlock FontSize="30"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource AppHeaderForegroundBrush}"
+                       Text="ARGUS" />
+            <TextBlock Foreground="{DynamicResource AppHeaderForegroundBrush}"
+                       Opacity="0.78"
+                       Text="WEB CHANGE MONITOR / AVALONIA UI PoC" />
+          </StackPanel>
+        </Grid>
+        <StackPanel Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="12">
+          <ToggleButton Classes="themeToggle"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding IsDarkThemeEnabled}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Width="16" Height="16" Data="{StaticResource IconTheme}" />
+              <TextBlock VerticalAlignment="Center" Text="ダークテーマ" />
+            </StackPanel>
+          </ToggleButton>
+          <Border Margin="12,0,0,0"
+                  Padding="8,4"
+                  Background="{DynamicResource AppAccentBrush}"
+                  IsVisible="{Binding IsDebug}">
+            <TextBlock FontWeight="SemiBold"
+                       Foreground="White"
+                       Text="DEBUG" />
+          </Border>
+        </StackPanel>
       </Grid>
-      <ListBox x:Name="TargetList"
-               Grid.Row="1"
-               ItemsSource="{Binding Rows}"
-               SelectionMode="Multiple"
-               SelectionChanged="TargetList_SelectionChanged">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:WatchTargetRowViewModel">
-            <Grid Margin="4,6" ColumnDefinitions="1.2*,1.8*,1.1*,0.6*,1.2*,1.4*" ColumnSpacing="10">
-              <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-              <TextBlock Grid.Column="1" Text="{Binding Url}" TextTrimming="CharacterEllipsis" />
-              <TextBlock Grid.Column="2" Text="{Binding ModeText}" TextWrapping="Wrap" />
-              <TextBlock Grid.Column="3" Text="{Binding EnabledText}" />
-              <TextBlock Grid.Column="4" Text="{Binding StatusText}" TextWrapping="Wrap" />
-              <StackPanel Grid.Column="5">
-                <TextBlock Text="{Binding LastCheckedText}" />
-                <TextBlock Opacity="0.72" Text="{Binding ErrorText}" TextWrapping="Wrap" />
-              </StackPanel>
-            </Grid>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+    </Border>
+
+    <Grid Grid.Row="1"
+          Margin="20,18,20,0"
+          ColumnDefinitions="*,*,*"
+          ColumnSpacing="12">
+      <Border Padding="16,12"
+              Background="{DynamicResource AppPanelBackgroundBrush}"
+              BorderBrush="{DynamicResource AppAccentBrush}"
+              BorderThickness="4,0,1,0">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <PathIcon Width="24" Height="24" VerticalAlignment="Center" Foreground="{DynamicResource AppAccentBrush}" Data="{StaticResource IconList}" />
+          <StackPanel Grid.Column="1" Spacing="3">
+            <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="登録サイト" />
+            <TextBlock FontSize="19" FontWeight="SemiBold" Foreground="{DynamicResource AppHeadingBrush}" Text="{Binding TargetSummary}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      <Border Grid.Column="1"
+              Padding="16,12"
+              Background="{DynamicResource AppPanelBackgroundBrush}"
+              BorderBrush="{DynamicResource AppAccentBrush}"
+              BorderThickness="4,0,1,0">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <PathIcon Width="24" Height="24" VerticalAlignment="Center" Foreground="{DynamicResource AppAccentBrush}" Data="{StaticResource IconCheck}" />
+          <StackPanel Grid.Column="1" Spacing="3">
+            <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="チェック状況" />
+            <TextBlock FontSize="19" FontWeight="SemiBold" Foreground="{DynamicResource AppHeadingBrush}" Text="{Binding CheckingSummary}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      <Border Grid.Column="2"
+              Padding="16,12"
+              Background="{DynamicResource AppPanelBackgroundBrush}"
+              BorderBrush="{DynamicResource AppAccentBrush}"
+              BorderThickness="4,0,1,0">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <PathIcon Width="24" Height="24" VerticalAlignment="Center" Foreground="{DynamicResource AppAccentBrush}" Data="{StaticResource IconSelection}" />
+          <StackPanel Grid.Column="1" Spacing="3">
+            <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="選択状態" />
+            <TextBlock FontSize="19" FontWeight="SemiBold" Foreground="{DynamicResource AppHeadingBrush}" Text="{Binding SelectionSummary}" />
+          </StackPanel>
+        </Grid>
+      </Border>
     </Grid>
 
-    <Grid Grid.Row="4" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-      <TextBlock VerticalAlignment="Center" Text="{Binding StatusMessage}" TextWrapping="Wrap" />
-      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-        <TextBlock Opacity="0.68" Text="{Binding Copyright}" />
-        <TextBlock Text="{Binding Version}" />
-      </StackPanel>
-    </Grid>
+    <Border Grid.Row="2"
+            Margin="20,12,20,0"
+            Padding="12"
+            Background="{DynamicResource AppPanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppPanelBorderBrush}"
+            BorderThickness="1">
+      <WrapPanel>
+        <Button Classes="primary" Margin="0,0,8,0" Command="{Binding CheckAllCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconCheck}" /><TextBlock Text="全件チェック" /></StackPanel>
+        </Button>
+        <Button Margin="0,0,8,0" Command="{Binding CheckSelectedCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconSelection}" /><TextBlock Text="選択をチェック" /></StackPanel>
+        </Button>
+        <Button Margin="0,0,20,0" Command="{Binding OpenBrowserCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconExternal}" /><TextBlock Text="ブラウザで開く" /></StackPanel>
+        </Button>
+        <Button Classes="primary" Margin="0,0,8,0" Command="{Binding AddCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconAdd}" /><TextBlock Text="追加" /></StackPanel>
+        </Button>
+        <Button Margin="0,0,8,0" Command="{Binding EditCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconEdit}" /><TextBlock Text="編集" /></StackPanel>
+        </Button>
+        <Button Classes="danger" Command="{Binding DeleteCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconDelete}" /><TextBlock Text="削除" /></StackPanel>
+        </Button>
+      </WrapPanel>
+    </Border>
+
+    <Border Grid.Row="3"
+            Margin="20,12,20,0"
+            Background="{DynamicResource AppPanelBackgroundBrush}"
+            BorderBrush="{DynamicResource AppPanelBorderBrush}"
+            BorderThickness="1">
+      <dg:DataGrid x:Name="TargetGrid"
+                   AutoGenerateColumns="False"
+                   CanUserResizeColumns="True"
+                   CanUserReorderColumns="False"
+                   CanUserSortColumns="False"
+                   ColumnHeaderHeight="38"
+                   Foreground="{DynamicResource AppTextBrush}"
+                   GridLinesVisibility="Horizontal"
+                   HeadersVisibility="Column"
+                   HorizontalScrollBarVisibility="Visible"
+                   HorizontalGridLinesBrush="{DynamicResource AppPanelBorderBrush}"
+                   ItemsSource="{Binding Rows}"
+                   IsReadOnly="True"
+                   RowBackground="{DynamicResource AppPanelBackgroundBrush}"
+                   RowHeight="42"
+                   SelectionMode="Extended"
+                   VerticalScrollBarVisibility="Visible"
+                   DoubleTapped="TargetGrid_DoubleTapped"
+                   SelectionChanged="TargetGrid_SelectionChanged">
+        <dg:DataGrid.Styles>
+          <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource AppGridHeaderBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AppHeadingBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+          </Style>
+          <Style Selector="DataGridRow:selected">
+            <Setter Property="Background" Value="{DynamicResource AppGridSelectionBrush}" />
+          </Style>
+        </dg:DataGrid.Styles>
+        <dg:DataGrid.Columns>
+          <dg:DataGridTextColumn Width="180" MinWidth="140" Binding="{Binding Name}" Header="名前" />
+          <dg:DataGridTextColumn Width="320" MinWidth="220" Binding="{Binding Url}" Header="URL" />
+          <dg:DataGridTextColumn Width="150" MinWidth="120" Binding="{Binding ModeText}" Header="監視モード" />
+          <dg:DataGridTextColumn Width="80" MinWidth="70" Binding="{Binding EnabledText}" Header="有効" />
+          <dg:DataGridTextColumn Width="140" MinWidth="110" Binding="{Binding StatusText}" Header="状態" />
+          <dg:DataGridTextColumn Width="170" MinWidth="150" Binding="{Binding LastCheckedText}" Header="最終チェック" />
+          <dg:DataGridTextColumn Width="240" MinWidth="160" Binding="{Binding ErrorText}" Header="エラー" />
+        </dg:DataGrid.Columns>
+      </dg:DataGrid>
+    </Border>
+
+    <Border Grid.Row="4"
+            Margin="20,0"
+            Padding="0,12,0,14">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBlock VerticalAlignment="Center"
+                   Foreground="{DynamicResource AppMutedTextBrush}"
+                   Text="{Binding StatusMessage}"
+                   TextWrapping="Wrap" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="{Binding Copyright}" />
+          <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="{Binding Version}" />
+        </StackPanel>
+      </Grid>
+    </Border>
   </Grid>
 </Window>

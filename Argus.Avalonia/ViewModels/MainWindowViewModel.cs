@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia.Styling;
+using Application = Avalonia.Application;
 using Argus.Avalonia.Services;
 using Argus.Core.Models;
 using Argus.Core.Persistence;
@@ -20,6 +22,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly List<WatchTargetRowViewModel> selectedRows = [];
     private string statusMessage;
     private bool disposed;
+    private bool isDarkThemeEnabled;
 
     /// <summary>CoreとUI固有サービスを手動構築で受け取り一覧状態を初期化</summary>
     public MainWindowViewModel(
@@ -48,6 +51,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         Copyright = applicationInfo.Copyright;
         Version = applicationInfo.Version;
         IsDebug = applicationInfo.IsDebug;
+        IsDarkThemeEnabled = false;
 
         CheckAllCommand = new AsyncCommand(
             (_, _) => ObserveChecksAsync(coordinator.StartAll(applicationCancellation.Token)),
@@ -129,6 +133,24 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     /// <summary>Debugビルドであることを画面へ明示する状態</summary>
     public bool IsDebug { get; }
+
+    /// <summary>画面全体の配色をダークに切り替えるかどうか</summary>
+    public bool IsDarkThemeEnabled
+    {
+        get => isDarkThemeEnabled;
+        set
+        {
+            if (!SetField(ref isDarkThemeEnabled, value))
+            {
+                return;
+            }
+
+            if (Application.Current is { } app)
+            {
+                app.RequestedThemeVariant = value ? ThemeVariant.Dark : ThemeVariant.Light;
+            }
+        }
+    }
 
     /// <summary>ListBoxの複数選択をViewModelの操作可否と集計へ反映</summary>
     public void SetSelection(IEnumerable<WatchTargetRowViewModel> rows)
