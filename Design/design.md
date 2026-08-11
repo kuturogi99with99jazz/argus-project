@@ -4,12 +4,12 @@
 
 - 文書名: Argus 基本設計書
 - ステータス: 承認済み
-- 対象: 初期 MVP
+- 対象: 初期 MVP、Avalonia UI PoC
 - 対応要件: `Design/requirement.md`
 - 作成日: 2026-07-22
-- 最終更新日: 2026-08-09
+- 最終更新日: 2026-08-11
 
-本書は、Argus 初期 MVP の実装方式を定義します。要件定義書に残っている未確定事項については、実装可能な設計案を示し、ユーザーの確認が必要なものを「要決定事項」として末尾にまとめます。
+本書は、Argus 初期 MVP の実装方式と、初期 MVP 完了後に実施する Avalonia UI PoC の設計を定義します。要件定義書に残っている未確定事項については、実装可能な設計案を示し、ユーザーの確認が必要なものを「要決定事項」としてまとめます。
 
 ---
 
@@ -1008,6 +1008,7 @@ dotnet publish Argus.WinForms/Argus.WinForms.csproj `
 | FR-011 | 10.7 | 手動UI確認 |
 | FR-012 | 6、10.3～10.5、12 | `WatchTargetManagementServiceTests`、手動UI確認 |
 | FR-013 | 10.9、12.4 | Debug/Releaseビルドでのコピーライト・バージョン表示の手動UI確認 |
+| FR-016 | 18 | Windowsでの全機能確認、macOSでの代表操作確認 |
 | NFR-001 | 3.1 | ビルド、Windows起動確認 |
 | NFR-002 | 14 | Release publish、起動確認 |
 | NFR-003 | 6 | `JsonTargetStoreTests` |
@@ -1016,6 +1017,8 @@ dotnet publish Argus.WinForms/Argus.WinForms.csproj `
 | NFR-006 | 7.3、10 | 手動UI確認 |
 | NFR-007 | 12 | `dotnet test` |
 | NFR-008 | 10.8、12.4 | 手動UI確認 |
+| NFR-009 | 18.3～18.6 | ViewModelテスト、テーマとUIの手動確認 |
+| NFR-010 | 18.8 | Visual Studio 2022およびVS Codeでの検証 |
 
 ---
 
@@ -1071,3 +1074,174 @@ dotnet publish Argus.WinForms/Argus.WinForms.csproj `
 - 将来のログ保存方式
 - JSONのバックアップファイルを作成するか
 - Windows arm64向け配布が必要か
+
+---
+
+## 18. Avalonia UI PoC 設計
+
+### 18.1 目的と現状分析
+
+Avalonia UI PoC は、既存 WinForms 版を正式版として維持したまま、`Argus.Core` を再利用する別フロントエンドの実現性を確認するために実施します。全面移行や WinForms 版の廃止はこの PoC の目的に含めません。
+
+現行ソリューションの調査結果:
+
+```text
+Core再利用性: 高
+Avalonia導入難易度: 中
+
+主な問題点:
+- WinForms側のProgram.Mainに依存構築と起動処理が集約されている
+- 既存のViewModel、配色、ブラウザ起動、ダイアログはWinFormsプロジェクト固有である
+- WinForms版とAvalonia版が同じJSONを同時に更新するプロセス間排他は存在しない
+- macOSではWinForms版を使用できず、既定ブラウザ起動と保存先を実機で確認する必要がある
+
+想定変更箇所:
+- Argus.AvaloniaとArgus.Avalonia.Testsの新規追加
+- Avalonia固有のView、ViewModel、UIサービス、依存構築
+- ソリューション、要件、設計、タスクの更新
+```
+
+`Argus.Core` には `System.Windows.Forms`、`System.Drawing`、`Form`、`Control`、`MessageBox` への依存がなく、公開 API も UI フレームワーク固有型を公開していません。Core の非同期 API は `CancellationToken` を受け取り、`CheckCoordinator` は状態と完了をイベントで通知します。このため、既知の Core 変更は不要です。
+
+### 18.2 プロジェクト構成と依存方向
+
+PoC では、既存プロジェクトへ次の2プロジェクトを追加します。
+
+```text
+Argus.sln
+├─ Argus.Core
+├─ Argus.Core.Tests
+├─ Argus.WinForms
+├─ Argus.WinForms.Tests
+├─ Argus.Avalonia
+└─ Argus.Avalonia.Tests
+```
+
+| プロジェクト | Target Framework | 役割 |
+| --- | --- | --- |
+| `Argus.Avalonia` | `net8.0` | Windows / macOS向けAvalonia UI、ViewModel、UI固有サービス、起動処理 |
+| `Argus.Avalonia.Tests` | `net8.0` | ViewModel、コマンド、表示変換、UIサービス境界の自動テスト |
+
+```mermaid
+flowchart LR
+    WinForms["Argus.WinForms"] --> Core["Argus.Core"]
+    Avalonia["Argus.Avalonia"] --> Core
+    CoreTests["Argus.Core.Tests"] --> Core
+    WinFormsTests["Argus.WinForms.Tests"] --> WinForms
+    AvaloniaTests["Argus.Avalonia.Tests"] --> Avalonia
+    AvaloniaTests --> Core
+```
+
+依存ルール:
+
+- `Argus.Core` は WinForms と Avalonia のどちらも参照しない
+- `Argus.Avalonia` は `Argus.Core` を `ProjectReference` する
+- Avalonia固有型を Core の公開 API、ドメインモデル、JSON 契約へ持ち込まない
+- WinForms固有の表示型とサービスを Avalonia から参照しない
+- Core 変更が必要になった場合は、UI非依存性を保つ最小変更とし、先に要件、設計、タスク、Coreテストを更新する
+
+### 18.3 Avalonia プロジェクト構成
+
+```text
+Argus.Avalonia/
+├─ App.axaml
+├─ App.axaml.cs
+├─ Program.cs
+├─ Views/
+│  ├─ MainWindow.axaml
+│  └─ TargetEditWindow.axaml
+├─ ViewModels/
+│  ├─ ViewModelBase.cs
+│  ├─ MainWindowViewModel.cs
+│  ├─ TargetEditViewModel.cs
+│  └─ WatchTargetRowViewModel.cs
+└─ Services/
+   ├─ BrowserService.cs
+   └─ DialogService.cs
+```
+
+- View はレイアウト、バインディング、ウィンドウ操作だけを担当する
+- ViewModel は `INotifyPropertyChanged` と `ICommand` を使用し、一覧状態、選択、入力検証、非同期操作を担当する
+- Core の `WatchTarget`、`WatchMode`、`CheckResult` を再利用し、Avalonia専用ドメインモデルを作らない
+- ブラウザ起動、確認ダイアログ、エラー表示は Avalonia 側のサービス境界へ分離する
+- 外部 MVVM ライブラリは追加せず、PoC に必要な最小限の基底型とコマンドだけを実装する
+
+### 18.4 画面と機能
+
+Avalonia版は現行WinForms版の機能を再実装します。ピクセル単位の外観一致ではなく、同じ業務操作と結果を提供することを優先します。
+
+- メイン画面で監視対象、URL、監視モード、有効状態、チェック状態、最終チェック日時を一覧表示する
+- 複数選択、全件チェック、選択項目チェック、ブラウザ起動、追加、編集、削除を提供する
+- 編集画面で名前、URL、監視モード、CSSセレクタ、有効状態、メモを入力できる
+- CSSセレクタ欄はCSSセレクタ比較の場合だけ表示し、Coreの入力検証結果を該当項目付近へ表示する
+- チェック中の編集・削除制限、重複チェック、起動データエラー時の主要操作無効化を現行仕様どおり維持する
+- コピーライト、アプリバージョン、Debugビルドの識別情報を表示する
+
+### 18.5 テーマとアクセシビリティ
+
+- Avalonia標準の Fluent Theme を使用する
+- `Application.RequestedThemeVariant` は `Default` とし、OSのライト / ダーク設定へ追従する
+- 独自のテーマ切替UIとMaterial Designなどの外部テーマは追加しない
+- 色はテーマ対応リソースへ集約し、Viewへ直接色値を散在させない
+- 状態名、入力エラー、選択、フォーカス、無効状態を色だけに依存せず識別できるようにする
+- PoCではWinForms版の「夏」テーマをそのまま移植せず、標準Fluent Themeによる視認性を評価する
+
+### 18.6 非同期処理とUIスレッド
+
+- ViewModel のチェック操作は非同期コマンドとし、UIスレッドをブロックしない
+- `CheckCoordinator.ExecutionChanged` と `CheckCoordinator.CheckCompleted` を購読して一覧状態へ反映する
+- CoreイベントがUIスレッド外で発生した場合だけ、Avalonia Dispatcherを介してViewModelを更新する
+- DispatcherをCoreまたはUI非依存サービスへ渡さない
+- アプリ終了時はアプリケーション共通の `CancellationTokenSource` をキャンセルし、終了後の結果を破棄済みViewへ反映しない
+- View終了時にCoreイベントの購読を解除し、`CheckCoordinator` とI/Oリソースを破棄する
+
+### 18.7 依存構築、データ、OS固有処理
+
+Avalonia版も外部DIコンテナーを追加せず、起動時に依存関係を手動構築します。WinForms版の `Program.Main` は変更せず、Avalonia側で同じCore具象型を組み立てます。重複が保守上の問題になることがPoCで確認されるまでは、共通DIプロジェクトを追加しません。
+
+- `JsonTargetStore.ResolveDefaultPath()` と schema v1 をそのまま使用する
+- WindowsではWinForms版とAvalonia版が同じ `%APPDATA%\Argus\targets.json` を使用する
+- macOSでは `Environment.SpecialFolder.ApplicationData` が解決するユーザー別領域を使用する
+- JSONの移行、複製、PoC専用スキーマは追加しない
+- プロセス間排他は追加せず、WindowsでWinForms版とAvalonia版を同時起動しないことを利用上の制約とする
+- 既定ブラウザ起動はAvalonia側のサービスに置き、HTTP / HTTPS URLを検証してOSの既定アプリへ渡す
+- OS固有エラーはプラットフォーム名を決め打ちしないユーザー向けメッセージへ変換する
+
+### 18.8 パッケージ、開発環境、検証
+
+Avalonia関連パッケージは `.NET 8` と互換性のある同一の安定版へ固定します。PoC開始時点では `12.1.0` を採用候補とし、実装開始時に公式サポート状況を再確認して `csproj` に確定バージョンを記録します。
+
+| パッケージ | 用途 |
+| --- | --- |
+| `Avalonia` | Avaloniaの基本APIとXAML |
+| `Avalonia.Desktop` | Windows / macOSデスクトップホスト |
+| `Avalonia.Themes.Fluent` | OSテーマへ追従する標準Fluent Theme |
+
+Windowsでの主要検証環境:
+
+- Visual Studio Community 2022 17.14以降で `Argus.sln` を開く
+- NuGet復元、Debug / Releaseのソリューションビルドを行う
+- WinForms版とAvalonia版をそれぞれスタートアッププロジェクトにしてF5起動する
+- Test ExplorerからCore、WinForms、Avaloniaの全テストを実行する
+- Avalonia版の全機能とWinForms版の回帰を手動確認する
+
+macOSでの軽量確認環境:
+
+- VS Codeでリポジトリを開き、.NET 8 CLIで復元とAvaloniaプロジェクトのビルドを行う
+- `dotnet run` でメイン画面を起動する
+- JSON読み込み、一覧表示、1件の手動チェック、既定ブラウザ起動を確認する
+- 全機能網羅、UI詳細、配布パッケージの検証は必須としない
+
+Avalonia用IDE拡張はXAML編集やプレビューの支援として任意で利用できますが、ビルドとテストの必須条件にはしません。Linuxは今回の検証対象外です。
+
+### 18.9 PoC完了報告
+
+PoC完了時は、次の項目を `Design/tasks.md` の総合検証タスクへ記録します。
+
+- 新規プロジェクトと追加パッケージ
+- 再利用できたCoreとCore側の変更有無
+- Avalonia側で実装した画面と機能
+- WinForms版への影響
+- WindowsとmacOSのビルド、テスト、手動確認結果
+- 全面移行する場合の課題
+- 全面移行推奨度（高 / 中 / 低）

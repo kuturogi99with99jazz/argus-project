@@ -26,7 +26,7 @@ Argus は、以下のような用途を想定しています。
 
 まずは Windows 専用の WinForms アプリとして実装します。
 
-将来的に便利だと判断できた場合は、Wails、Tauri、Avalonia などを使った再構築も検討します。
+初期 MVP 完了後は、既存 WinForms 版を残したまま Avalonia UI 版を試験追加し、Core を再利用できるか評価します。Avalonia への正式移行や WinForms 版の廃止は PoC の結果を確認してから別途判断します。Wails、Tauri などによる再構築は引き続き将来候補とします。
 
 ただし、初期実装ではクロスプラットフォーム対応よりも、以下を優先します。
 
@@ -60,8 +60,10 @@ TDD では、設計とタスクに基づき、テスト可能な振る舞いを�
 
 ## 想定環境
 
-- OS: Windows 10 / Windows 11
-- UI: WinForms
+- 正式版OS: Windows 10 / Windows 11
+- 正式版UI: WinForms
+- Avalonia PoC主要環境: Windows 10 / Windows 11、Visual Studio Community 2022
+- Avalonia PoC軽量確認環境: macOS、VS Code、.NET 8 CLI
 - 言語: C#
 - フレームワーク: .NET 8
 - 保存形式: JSON
@@ -78,6 +80,10 @@ dotnet restore
 dotnet build Argus.sln
 dotnet run --project Argus.WinForms
 ```
+
+Windowsでの通常開発とAvalonia PoCの主要確認には Visual Studio Community 2022 を使用します。Avaloniaプロジェクト追加後は、同じ `Argus.sln` からWinForms版とAvalonia版をそれぞれスタートアッププロジェクトに設定し、F5起動、Debug / Releaseビルド、Test Explorerでの全テストを確認します。Avalonia用IDE拡張はXAML編集やプレビューの支援に限定し、ビルドの必須条件にはしません。
+
+macOSではVS Codeでリポジトリを開き、.NET 8 CLIによる復元、ビルド、`dotnet run`での起動を軽く確認します。macOSでの全機能網羅、UI詳細、配布パッケージ検証は行いません。
 
 初回起動時は空の一覧が表示され、保存ファイルが存在しない場合は空のスキーマv1文書を作成します。「追加」から名前とHTTP/HTTPS URLを入力すると、最初の監視対象を登録できます。
 
@@ -248,13 +254,21 @@ Argus/
     Forms/
     Presentation/
 
+  Argus.Avalonia/          # PoCで追加予定
+    Views/
+    ViewModels/
+    Services/
+
+  Argus.Avalonia.Tests/    # PoCで追加予定
+    ViewModels/
+
   UI/
     index.html
     styles.css
     app.js
 ```
 
-WinForms側には画面表示とイベント接続だけを置き、更新チェック、HTML解析、状態判定、保存はCore側に分離しています。`UI/` のHTMLモックは承認済みの設計資料であり、WinForms実行時には読み込みません。
+WinForms側には画面表示とイベント接続だけを置き、更新チェック、HTML解析、状態判定、保存はCore側に分離しています。Avalonia PoCでも同じCoreを参照し、MVVMで画面とUI状態を構成します。`UI/` のHTMLモックは承認済みの設計資料であり、WinFormsまたはAvaloniaの実行時には読み込みません。
 
 ---
 
@@ -279,13 +293,40 @@ WinForms側には画面表示とイベント接続だけを置き、更新チェ
 
 ## 今後の予定
 
+- Avalonia UI PoCによる代替フロントエンドの評価
 - カクヨム向け最新エピソード比較
 - 最新話を開く機能
 - 小説家になろう等のサイト別対応
 - 差分表示
 - チェック履歴
 - UI 改善
-- 必要に応じた Wails / Tauri / Avalonia での再構築
+- Avalonia UI PoCの結果を踏まえた正式移行判断
+- 必要に応じた Wails / Tauri での再構築
+
+---
+
+## Avalonia UI PoC
+
+Avalonia UI PoCでは、現行WinForms版を削除または置換せず、同じ `Argus.Core` とschema v1 JSONを利用する代替フロントエンドを追加します。
+
+PoCの対象:
+
+- 監視対象の一覧、追加、編集、削除
+- 全件チェック、選択項目チェック、結果表示
+- HTMLテキスト、HTML全体、CSSセレクタ比較
+- OSの既定ブラウザで開く操作
+- コピーライト、バージョン、Debugビルド表示
+- Avalonia標準Fluent ThemeとOSのライト／ダーク設定への追従
+
+評価方針:
+
+- Core再利用性は「高」、Avalonia導入難易度は「中」と見込む
+- WindowsをPoCの合否を判断する主環境とし、Visual Studio 2022で全機能と回帰を確認する
+- macOSはVS Codeと.NET CLIで起動、JSON読み込み、一覧表示、1件の手動チェック、既定ブラウザ起動を軽く確認する
+- WinForms版とAvalonia版はWindows上で同じJSONを使用するが、同時起動はしない
+- Linux対応、UI自動テスト、正式移行、WinForms版廃止、プロセス間ファイル排他はPoC対象外とする
+
+成功時も自動的に全面移行せず、Core変更の有無、WinForms版への影響、WindowsとmacOSの検証結果、全面移行時の課題、推奨度をまとめて判断材料とします。
 
 ---
 

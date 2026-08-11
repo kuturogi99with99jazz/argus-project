@@ -4,12 +4,12 @@
 
 - 文書名: Argus 要件定義書
 - ステータス: 承認済み
-- 対象: 初期 MVP
+- 対象: 初期 MVP、Avalonia UI PoC
 - 情報源: `Design/project-overview.md`
 - 作成日: 2026-07-15
-- 最終更新日: 2026-08-09
+- 最終更新日: 2026-08-11
 
-本書は、`Design/project-overview.md` に記載された構想から、Argus の初期 MVP に必要な要件を抽出して整理したものです。
+本書は、`Design/project-overview.md` に記載された構想から、Argus の初期 MVP と、初期 MVP 完了後に実施する Avalonia UI PoC に必要な要件を抽出して整理したものです。
 
 「今後の予定」として記載された内容は初期 MVP の必須要件に含めず、将来候補として分離します。プロジェクト構想だけでは判断できない事項は「要確認事項」として記載します。
 
@@ -87,6 +87,30 @@ Argus の目的は、ユーザーが任意のタイミングで更新チェッ�
 - チェック履歴の表示
 - 最新話 URL を直接開く機能
 - Wails、Tauri、Avalonia など、WinForms 以外の UI 技術への移行
+
+### 5.3 Avalonia UI PoC の対象
+
+Avalonia UI PoC は初期 MVP とは別の評価フェーズとし、既存 WinForms 版を残したまま、同じ Core を利用する代替フロントエンドを追加します。
+
+対象:
+
+- `Argus.Avalonia` を `.NET 8` のデスクトップアプリとして追加する
+- 現行 WinForms 版の一覧表示、追加、編集、削除、全件チェック、選択項目チェック、結果表示、ブラウザ起動、アプリ情報表示を再実装する
+- `Argus.Core` のモデル、永続化、取得、比較、チェック調停処理を再利用する
+- 現行の schema v1 JSON を読み書きする
+- Windows 10 / Windows 11 を主要な開発・品質確認環境とする
+- macOS では VS Code と .NET CLI を用いて、起動と代表操作の互換性を軽量に確認する
+
+対象外:
+
+- WinForms 版の削除、全面改修、または正式版からの置き換え
+- Core の大規模な再設計
+- JSON スキーマ、既存データ、保存方式の変更
+- WinForms 版と Avalonia 版の同時起動を保証するプロセス間排他
+- Linux でのビルドまたは動作確認
+- Avalonia 版の UI 自動テスト
+- macOS での全機能網羅、UI 詳細、配布パッケージの検証
+- Avalonia への正式移行判断
 
 ---
 
@@ -352,6 +376,24 @@ Copyright © 2026 SIA-ACT
 - Release構成でビルドしたアプリには `DEBUG` が表示されない
 - バージョン番号とデバッグ表示が、通常の操作やメッセージ表示を妨げない
 
+### FR-016 Avalonia UI PoC
+
+Argus は、既存 WinForms 版と並存し、同じ Core ロジックを利用する Avalonia UI 版を試験的に起動できなければなりません。
+
+受け入れ条件:
+
+- `Argus.Avalonia` から `Argus.Core` を参照し、Core から Avalonia または WinForms を参照しない
+- Windows 10 / Windows 11 上で Avalonia 版を起動できる
+- JSON 読み込みエラー時の操作制限を含め、現行 WinForms 版と同じ監視対象一覧を表示できる
+- 監視対象を追加、編集、削除できる
+- 全件チェックと選択項目チェックを実行し、結果を一覧へ反映できる
+- HTML テキスト、HTML 全体、CSS セレクタの各比較方式を利用できる
+- 選択した監視対象を OS の既定ブラウザで開ける
+- コピーライト、バージョン、Debug ビルドの識別情報を確認できる
+- 正常結果だけを現行 schema v1 JSON へ保存し、エラー時は前回の正常データを上書きしない
+- WinForms 版の既存機能、ビルド、テストを壊さない
+- macOS 上で Avalonia 版を起動し、JSON 読み込み、一覧表示、1 件の手動チェック、既定ブラウザ起動を確認できる
+
 ---
 
 ## 8. 非機能要件
@@ -414,6 +456,23 @@ Copyright © 2026 SIA-ACT
 - 文字と背景のコントラストを確保し、長時間使用しても読みにくくならないこと
 - 更新状態やエラー状態は色だけで表現せず、状態名の文字を必ず併記すること
 - 操作可能、選択中、フォーカス中、無効の各状態を視覚的に区別できること
+
+### NFR-009 Avalonia UI の構造とテーマ
+
+- Avalonia 側は MVVM を基本とし、View に業務ロジックを置かない
+- Core の公開 API とドメインモデルを再利用し、Avalonia 専用のドメインモデルを重複して作らない
+- Avalonia 標準の Fluent Theme を使用し、外部 MVVM ライブラリや外部 UI テーマを追加しない
+- OS のライト / ダーク設定へ追従し、テーマ切替専用 UI は追加しない
+- 更新状態やエラー状態は色だけで表現せず、状態名の文字を併記する
+- Core からのイベントを ViewModel へ反映する箇所以外では、UI Dispatcher への依存を増やさない
+
+### NFR-010 Avalonia UI PoC の検証環境
+
+- Windows では Visual Studio Community 2022 を主要な開発・品質確認環境とする
+- Windows ではソリューション読込、NuGet 復元、Debug / Release ビルド、F5 起動、全自動テスト、全機能の手動確認を行う
+- macOS では VS Code と .NET 8 CLI を使用し、復元、ビルド、起動と代表操作を確認する
+- Avalonia 用 IDE 拡張機能は編集やプレビューの支援に限定し、ビルドの必須条件にしない
+- macOS での確認結果は互換性の参考とし、PoC の合否は Windows での検証結果を基準に判断する
 
 ---
 
@@ -501,7 +560,8 @@ Copyright © 2026 SIA-ACT
 - 差分表示
 - チェック履歴
 - UI 改善
-- Wails、Tauri、Avalonia などによる再構築
+- Wails、Tauri などによる再構築
+- Avalonia UI PoC の結果を踏まえた正式移行
 
 将来候補を実装対象へ移す場合は、本書へ要件を追加してから設計とタスクを更新します。
 
@@ -554,3 +614,19 @@ Copyright © 2026 SIA-ACT
 - Debugビルドではデバッグ表示があり、Releaseビルドでは表示されない
 - Core の主要な振る舞いに対応する自動テストが存在する
 - 自動テストが実際の Web サイトへ依存せず、すべて成功する
+
+---
+
+## 14. Avalonia UI PoC の完了判定
+
+Avalonia UI PoC は、少なくとも次の条件をすべて満たした場合に完了とします。
+
+- Windows の Visual Studio 2022 でソリューション全体を読み込み、Debug / Release ビルドできる
+- Windows で WinForms 版と Avalonia 版をそれぞれ F5 起動できる
+- Avalonia 版で FR-016 に定めた現行機能を利用できる
+- Core、WinForms、Avalonia の全自動テストが Windows で成功する
+- schema v1 JSON とエラー時のデータ保護が維持される
+- WinForms 版の既存機能へ回帰がない
+- macOS の VS Code と .NET CLI で復元、ビルド、起動が成功する
+- macOS で JSON 読み込み、一覧表示、1 件の手動チェック、既定ブラウザ起動を確認できる
+- Core 再利用結果、WinForms 版への影響、全面移行時の課題、全面移行推奨度を記録する
