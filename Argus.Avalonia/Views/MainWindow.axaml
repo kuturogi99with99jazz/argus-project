@@ -132,8 +132,13 @@
             Background="{DynamicResource AppPanelBackgroundBrush}"
             BorderBrush="{DynamicResource AppPanelBorderBrush}"
             BorderThickness="1">
-      <dg:DataGrid x:Name="TargetGrid"
+      <Grid ClipToBounds="True">
+        <Image IsHitTestVisible="False"
+               Source="avares://Argus.Avalonia/Assets/argus-banner.png"
+               Stretch="UniformToFill" />
+        <dg:DataGrid x:Name="TargetGrid"
                    AutoGenerateColumns="False"
+                   Background="{DynamicResource AppGridSurfaceOverlayBrush}"
                    CanUserResizeColumns="True"
                    CanUserReorderColumns="False"
                    CanUserSortColumns="False"
@@ -145,7 +150,7 @@
                    HorizontalGridLinesBrush="{DynamicResource AppPanelBorderBrush}"
                    ItemsSource="{Binding Rows}"
                    IsReadOnly="True"
-                   RowBackground="{DynamicResource AppPanelBackgroundBrush}"
+                   RowBackground="Transparent"
                    RowHeight="42"
                    SelectionMode="Extended"
                    VerticalScrollBarVisibility="Visible"
@@ -170,7 +175,8 @@
           <dg:DataGridTextColumn Width="170" MinWidth="150" Binding="{Binding LastCheckedText}" Header="最終チェック" />
           <dg:DataGridTextColumn Width="240" MinWidth="160" Binding="{Binding ErrorText}" Header="エラー" />
         </dg:DataGrid.Columns>
-      </dg:DataGrid>
+        </dg:DataGrid>
+      </Grid>
     </Border>
 
     <Border Grid.Row="4"

@@ -20,4 +20,8 @@
     <ProjectReference Include="..\Argus.Core\Argus.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AvaloniaResource Include="..\assets\argus-banner.png" Link="Assets\argus-banner.png" />
+  </ItemGroup>
+
 </Project>

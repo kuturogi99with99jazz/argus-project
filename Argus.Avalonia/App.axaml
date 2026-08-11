@@ -27,6 +27,7 @@
           <SolidColorBrush x:Key="AppGridHeaderBrush" Color="#DCE7F3" />
           <SolidColorBrush x:Key="AppGridAlternateRowBrush" Color="#F6F9FC" />
           <SolidColorBrush x:Key="AppGridSelectionBrush" Color="#CFE2FF" />
+          <SolidColorBrush x:Key="AppGridSurfaceOverlayBrush" Color="#EBFFFFFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="AppWindowBackgroundBrush" Color="#0E1726" />
@@ -50,6 +51,7 @@
           <SolidColorBrush x:Key="AppGridHeaderBrush" Color="#253956" />
           <SolidColorBrush x:Key="AppGridAlternateRowBrush" Color="#1C2A40" />
           <SolidColorBrush x:Key="AppGridSelectionBrush" Color="#234F86" />
+          <SolidColorBrush x:Key="AppGridSurfaceOverlayBrush" Color="#F2172337" />
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
       <StreamGeometry x:Key="IconArgus">M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z</StreamGeometry>
