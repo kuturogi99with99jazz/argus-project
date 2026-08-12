@@ -28,6 +28,9 @@
   <ItemGroup>
     <AvaloniaResource Include="..\assets\argus-app-icon.ico" Link="Assets\argus-app-icon.ico" />
     <AvaloniaResource Include="..\assets\argus-banner.png" Link="Assets\argus-banner.png" />
+    <EmbeddedResource Include="..\Manual\index.html" Link="Manual\index.html" LogicalName="Argus.Manual.index.html" />
+    <EmbeddedResource Include="..\Manual\main.png" Link="Manual\main.png" LogicalName="Argus.Manual.main.png" />
+    <EmbeddedResource Include="..\Manual\entry.png" Link="Manual\entry.png" LogicalName="Argus.Manual.entry.png" />
   </ItemGroup>
 
   <ItemGroup>

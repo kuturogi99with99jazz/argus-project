@@ -497,6 +497,7 @@
       <h1>ユーザーマニュアル</h1>
       <p class="hero-copy">登録したWebページを、必要なときにまとめて確認。初めて使う方も、判定に迷った方も、このページだけで操作と考え方が分かります。</p>
       <ul class="hero-meta" aria-label="対応情報">
+        <li>Avalonia正式版 v0.2.0</li>
         <li>Windows / macOS</li>
         <li>手動チェック専用</li>
         <li>HTML・CSSセレクタ対応</li>
@@ -540,6 +541,7 @@
 
         <h3>起動方法</h3>
         <p>Windowsでは<code>Argus.exe</code>、macOSでは<code>Argus.app</code>を開きます。初回起動時は一覧が空なので、まず監視対象を1件登録します。</p>
+        <p>アプリを起動した後は、メイン画面右上の「マニュアル」ボタンからいつでもこのページを開けます。マニュアル本文と画像はArgusに内蔵されているため、閲覧自体にインターネット接続は必要ありません。</p>
         <div class="callout warning">
           <p><strong>自動ではチェックされません。</strong> 更新を確認したいときにArgusを起動し、「全件チェック」または「選択をチェック」を実行してください。</p>
         </div>
@@ -564,7 +566,7 @@
       <section id="main-screen">
         <h2><span class="num">Section 03</span>メイン画面の見方</h2>
         <figure>
-          <img src="main.png" width="1120" height="747" alt="ArgusのAvaloniaメイン画面。上部にチェックと管理のボタン、中央に架空の監視対象一覧、下部にメッセージとv0.2.0を表示">
+          <img src="main.png" width="1136" height="759" alt="ArgusのAvaloniaメイン画面。ヘッダー右側にマニュアルとテーマ切替、上部にチェックと管理のボタン、中央に架空の監視対象一覧、下部にメッセージとv0.2.0を表示">
           <figcaption>Avalonia正式版のメイン画面。名前とURLはマニュアル用の架空データです。</figcaption>
         </figure>
 
@@ -573,6 +575,7 @@
           <table>
             <thead><tr><th scope="col">ボタン</th><th scope="col">できること</th><th scope="col">利用できる条件</th></tr></thead>
             <tbody>
+              <tr><th scope="row">マニュアル</th><td>この正式ユーザーマニュアルを既定ブラウザで表示</td><td>常時利用可能</td></tr>
               <tr><th scope="row">全件チェック</th><td>有効な監視対象をすべて確認</td><td>有効な対象が1件以上ある</td></tr>
               <tr><th scope="row">選択をチェック</th><td>選択中の有効な対象だけを確認</td><td>有効な行を選択している</td></tr>
               <tr><th scope="row">ブラウザで開く</th><td>登録URLを既定ブラウザで表示</td><td>1件だけ選択している</td></tr>
@@ -598,6 +601,7 @@
           </table>
         </div>
         <p>行をクリックすると選択できます。複数選ぶときは <kbd>Ctrl</kbd> を押しながらクリックします。選択件数は一覧右上で確認できます。</p>
+        <p>キーボードでは <kbd>Tab</kbd> で「マニュアル」ボタンを含む各操作へ移動し、<kbd>Enter</kbd> または <kbd>Space</kbd> で実行できます。</p>
         <p>画面下部には操作結果、エラーの概要、コピーライト、バージョンが表示されます。開発用のDebugビルドでは <code>DEBUG</code> も表示されます。</p>
       </section>
 
@@ -852,6 +856,11 @@
         <details>
           <summary>ブラウザで開けない</summary>
           <div class="details-body"><p>登録URLと、OSの既定ブラウザ設定を確認してください。URLを編集した場合は、次の正常なチェックが「初回取得」になる点にも注意してください。</p></div>
+        </details>
+
+        <details>
+          <summary>「マニュアル」ボタンでこのページを開けない</summary>
+          <div class="details-body"><p>OSの既定ブラウザ設定と一時フォルダーへの書き込み権限を確認し、Argusを再起動してください。マニュアルはバージョン別の一時フォルダーへ展開されますが、監視対象データや前回の正常な比較結果には影響しません。</p></div>
         </details>
       </section>
     </main>

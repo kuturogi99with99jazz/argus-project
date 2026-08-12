@@ -58,6 +58,7 @@ flowchart LR
 | `MainWindowViewModel` | 一覧、選択、集計、チェック・管理コマンド、テーマ状態 |
 | `TargetEditViewModel` | 入力状態と Core の検証結果の表示 |
 | `BrowserService` | HTTP / HTTPS URL を OS の既定ブラウザへ渡す |
+| `ManualService` | 埋め込みマニュアルをバージョン別一時領域へ展開し、OSの既定ブラウザへ渡す |
 | `DialogService` | 確認・エラーダイアログを ViewModel から分離する |
 | `CheckCoordinator` | 全件・選択チェック、並行実行、結果コミットの調停 |
 | `WatchTargetManagementService` | 追加・編集・削除の検証と永続化 |
@@ -90,7 +91,7 @@ HTTP 同時実行数はアプリ全体で最大4件とします。アプリ終�
 
 - Avalonia 12.1.0 の Fluent Theme と公式 DataGrid を使用する
 - メイン画面は監視対象、URL、監視モード、有効状態、チェック状態、最終チェック日時を表示する
-- 複数選択、全件チェック、選択項目チェック、ブラウザ起動、追加、編集、削除を提供する
+- 複数選択、全件チェック、選択項目チェック、ブラウザ起動、追加、編集、削除、正式マニュアル表示を提供する
 - DataGrid は列幅変更、自動調整、水平・垂直スクロールを提供する
 - 編集画面は名前、URL、監視モード、CSSセレクタ、有効状態、メモを扱う
 - ライトテーマを既定とし、画面上でライト／ダークを切り替えられる
@@ -98,10 +99,13 @@ HTTP 同時実行数はアプリ全体で最大4件とします。アプリ終�
 - `assets/argus-banner.png` を一覧の操作を妨げない薄い背景として使用する
 - 全ウィンドウと各OSの成果物で同じ Argus アイコンを使用する
 - バージョンは `v0.2.0`、Debug構成だけ `DEBUG` を表示する
+- ヘッダー右側にアイコンと文字ラベルを持つ「マニュアル」ボタンを置き、選択状態や起動データエラーに依存せず利用可能にする
 
 ## 8. OS固有処理
 
 - `Process.Start` と `UseShellExecute=true` により OS の既定ブラウザを利用する
+- マニュアル資産はアセンブリへ埋め込み、実行時にOSの一時領域にある `Argus/Manual/v0.2.0` へ固定名で展開する
+- 展開済み資産はブラウザ表示を継続できるようアプリ終了時に削除せず、旧バージョンの自動削除は行わない
 - Windows と macOS の例外をプラットフォーム非依存のユーザー向けメッセージへ変換する
 - macOS用 app bundle は `Info.plist`、`Contents/MacOS`、`Contents/Resources` を持つ
 - Linux、Intel Mac、Windows arm64 は v0.2.0 の対象外とする
@@ -114,6 +118,7 @@ HTTP 同時実行数はアプリ全体で最大4件とします。アプリ終�
 - 成果物: `artifacts/Argus-win-x64-single/Argus.exe`
 - `SelfContained=true`、`PublishSingleFile=true`
 - `PublishTrimmed=false`、`PublishReadyToRun=false`
+- `Manual/index.html`、`Manual/main.png`、`Manual/entry.png` を埋め込み、外部ファイルを追加しない
 
 ### macOS
 
@@ -121,12 +126,14 @@ HTTP 同時実行数はアプリ全体で最大4件とします。アプリ終�
 - Runtime Identifier: `osx-arm64`
 - 成果物: `artifacts/Argus-macos-arm64/Argus.app`
 - 自己完結型として.NETランタイムを同梱する
+- HTMLマニュアルと画像を実行アセンブリへ埋め込む
 - Apple Developer署名、公証、インストーラー、自動更新は後続タスクとする
 
 ## 10. テスト設計
 
 - `Argus.Core.Tests` は実Webサイトへ接続せず、初回取得、更新なし、更新あり、通信エラー、データ保護、JSON読込、入力検証、並行実行を検証する
 - `Argus.Tests` は ViewModel、コマンド、表示変換、UIサービス境界を View なしで検証する
+- マニュアルコマンドの常時利用、成功・失敗結果と、HTML・画像の埋め込みリソースを自動テストする
 - Windows と macOS の双方で restore、Debug / Release build、全自動テストを実行する
 - 両OSで CRUD、全件／選択チェック、ブラウザ起動、再起動後の永続化、ライト／ダーク、キーボード、ダイアログ、アイコン、バージョンを手動確認する
 - Windows の single-file と macOS の app bundle を発行先とは別の場所から起動する

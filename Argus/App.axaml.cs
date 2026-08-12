@@ -58,6 +58,7 @@ public sealed partial class App : Application
             var checkService = new WatchCheckService(fetcher, extractor, new Sha256HashService());
             var coordinator = new CheckCoordinator(repository, checkService);
             var managementService = new WatchTargetManagementService(repository, coordinator);
+            var applicationInfo = new ApplicationInfoProvider().Get();
             MainWindow? mainWindow = null;
             var dialogService = new DialogService(() => mainWindow);
             var viewModel = new MainWindowViewModel(
@@ -65,9 +66,10 @@ public sealed partial class App : Application
                 managementService,
                 coordinator,
                 new BrowserService(),
+                new ManualService(applicationInfo.Version),
                 dialogService,
                 new AvaloniaUiDispatcher(),
-                new ApplicationInfoProvider().Get(),
+                applicationInfo,
                 applicationCancellation,
                 startupError);
             mainWindow = new MainWindow(viewModel);

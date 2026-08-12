@@ -15,6 +15,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly WatchTargetManagementService managementService;
     private readonly CheckCoordinator coordinator;
     private readonly IBrowserService browserService;
+    private readonly IManualService manualService;
     private readonly IDialogService dialogService;
     private readonly IUiDispatcher dispatcher;
     private readonly CancellationTokenSource applicationCancellation;
@@ -30,6 +31,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         WatchTargetManagementService managementService,
         CheckCoordinator coordinator,
         IBrowserService browserService,
+        IManualService manualService,
         IDialogService dialogService,
         IUiDispatcher dispatcher,
         ApplicationInfo applicationInfo,
@@ -40,6 +42,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         this.managementService = managementService ?? throw new ArgumentNullException(nameof(managementService));
         this.coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
         this.browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
+        this.manualService = manualService ?? throw new ArgumentNullException(nameof(manualService));
         this.dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         this.dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         this.applicationCancellation = applicationCancellation ??
@@ -67,6 +70,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             applicationCancellation.Token);
         OpenBrowserCommand = new RelayCommand(_ => OpenBrowser(),
             _ => isOperational && selectedRows.Count == 1);
+        OpenManualCommand = new RelayCommand(_ => OpenManual());
         AddCommand = new AsyncCommand(
             (_, _) => AddAsync(),
             _ => isOperational,
@@ -99,6 +103,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     /// <summary>単一選択した監視対象を既定ブラウザで開くコマンド</summary>
     public RelayCommand OpenBrowserCommand { get; }
+
+    /// <summary>選択状態やデータ読込結果に依存せず正式ユーザーマニュアルを開くコマンド</summary>
+    public RelayCommand OpenManualCommand { get; }
 
     /// <summary>監視対象を追加する編集画面を開くコマンド</summary>
     public AsyncCommand AddCommand { get; }
@@ -268,6 +275,20 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         else
         {
             _ = ShowErrorAsync(result.ErrorMessage ?? "ブラウザを開けませんでした。");
+        }
+    }
+
+    /// <summary>埋め込みマニュアルの展開と既定ブラウザ起動をUIサービスへ委譲</summary>
+    private void OpenManual()
+    {
+        var result = manualService.Open();
+        if (result.IsSuccess)
+        {
+            StatusMessage = "ユーザーマニュアルを既定ブラウザで開きました。";
+        }
+        else
+        {
+            _ = ShowErrorAsync(result.ErrorMessage ?? "ユーザーマニュアルを開けませんでした。");
         }
     }
 

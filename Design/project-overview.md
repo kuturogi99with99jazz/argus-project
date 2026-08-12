@@ -13,7 +13,7 @@ Argus は、登録した Web ページの更新有無をユーザーが任意の
 - バージョン: 0.2.0
 - UI: Avalonia 12.1.0
 - OS: Windows 10 / 11 x64、macOS 14以降 Apple Silicon
-- Windows成果物: 自己完結型 `Argus.exe` 1ファイル
+- Windows成果物: 正式HTMLマニュアルを内包した自己完結型 `Argus.exe` 1ファイル
 - macOS成果物: 自己完結型 `Argus.app`
 - 対象外: Linux、Intel Mac、Windows arm64、署名・公証、インストーラー、自動更新
 
@@ -46,7 +46,7 @@ Argus.Tests/           ViewModelと表示変換のテスト
 Argus.Core/            取得、抽出、比較、保存、チェック調停
 Argus.Core.Tests/      Coreの自動テスト
 Design/                要件、設計、タスク、発行確認手順
-Manual/                HTMLユーザーマニュアルと画像
+Manual/                実行ファイルへ埋め込む正式HTMLユーザーマニュアルと画像
 assets/                バナーとアプリアイコン
 ```
 

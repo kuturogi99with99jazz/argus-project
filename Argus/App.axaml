@@ -63,6 +63,7 @@
       <StreamGeometry x:Key="IconEdit">M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM14.06 6.19l3.75 3.75 1.9-1.9-3.75-3.75-1.9 1.9z</StreamGeometry>
       <StreamGeometry x:Key="IconDelete">M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4z</StreamGeometry>
       <StreamGeometry x:Key="IconTheme">M9.37 5.51A7 7 0 0 0 18.49 14.63 7 7 0 1 1 9.37 5.51z</StreamGeometry>
+      <StreamGeometry x:Key="IconManual">M21 4H7C5.9 4 5 4.9 5 6v13c0 1.1.9 2 2 2h14V4zm-2 15H7V6h12v13zM3 6H1v13c0 1.1.9 2 2 2V6zm6 1h8v2H9V7zm0 4h8v2H9v-2zm0 4h5v2H9v-2z</StreamGeometry>
     </ResourceDictionary>
   </Application.Resources>
 

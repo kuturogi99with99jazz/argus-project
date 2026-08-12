@@ -19,6 +19,7 @@ public sealed class MainWindowViewModelTests
         viewModel.SetSelection([viewModel.Rows[0]]);
 
         Assert.True(viewModel.OpenBrowserCommand.CanExecute(null));
+        Assert.True(viewModel.OpenManualCommand.CanExecute(null));
         Assert.True(viewModel.EditCommand.CanExecute(null));
         Assert.True(viewModel.DeleteCommand.CanExecute(null));
         Assert.Equal("選択 1件", viewModel.SelectionSummary);
@@ -56,6 +57,7 @@ public sealed class MainWindowViewModelTests
         Assert.False(viewModel.CheckAllCommand.CanExecute(null));
         Assert.False(viewModel.AddCommand.CanExecute(null));
         Assert.False(viewModel.OpenBrowserCommand.CanExecute(null));
+        Assert.True(viewModel.OpenManualCommand.CanExecute(null));
         Assert.Equal("読み込みエラー", viewModel.StatusMessage);
     }
 
@@ -104,6 +106,33 @@ public sealed class MainWindowViewModelTests
         Assert.Equal("Example を既定ブラウザで開きました。", viewModel.StatusMessage);
     }
 
+    /// <summary>一覧未選択でも正式マニュアルを既定ブラウザへ渡せることを検証</summary>
+    [Fact]
+    public void OpenManual_WhenNoRowSelected_DelegatesToManualService()
+    {
+        using var context = TestContext.Create();
+        using var viewModel = context.CreateViewModel();
+
+        viewModel.OpenManualCommand.Execute(null);
+
+        Assert.Equal(1, context.Manual.OpenCount);
+        Assert.Equal("ユーザーマニュアルを既定ブラウザで開きました。", viewModel.StatusMessage);
+    }
+
+    /// <summary>正式マニュアルを開けない場合に利用者向けエラーを表示することを検証</summary>
+    [Fact]
+    public void OpenManual_WhenServiceFails_ShowsError()
+    {
+        using var context = TestContext.Create();
+        context.Manual.Result = ManualOpenResult.Failure("マニュアルを開けませんでした。");
+        using var viewModel = context.CreateViewModel();
+
+        viewModel.OpenManualCommand.Execute(null);
+
+        Assert.Equal("マニュアルを開けませんでした。", viewModel.StatusMessage);
+        Assert.Equal("マニュアルを開けませんでした。", context.Dialog.LastErrorMessage);
+    }
+
     /// <summary>CoreとUI境界を決定的なテスト依存でまとめて構築する補助コンテキスト</summary>
     private sealed class TestContext : IDisposable
     {
@@ -115,6 +144,9 @@ public sealed class MainWindowViewModelTests
 
         /// <summary>ブラウザ委譲結果を観測するテスト用サービス</summary>
         public StubBrowserService Browser { get; } = new();
+
+        /// <summary>正式マニュアル表示の委譲結果を観測するテスト用サービス</summary>
+        public StubManualService Manual { get; } = new();
 
         /// <summary>編集入力と確認結果を制御するテスト用サービス</summary>
         public StubDialogService Dialog { get; } = new();
@@ -147,6 +179,7 @@ public sealed class MainWindowViewModelTests
                 managementService,
                 coordinator,
                 Browser,
+                Manual,
                 Dialog,
                 new ImmediateDispatcher(),
                 new ApplicationInfo(null, "v0.2.0", true),
@@ -212,6 +245,23 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    /// <summary>ファイル展開やブラウザ起動を行わず結果を返すマニュアル境界</summary>
+    private sealed class StubManualService : IManualService
+    {
+        /// <summary>マニュアルを開く操作の呼び出し回数</summary>
+        public int OpenCount { get; private set; }
+
+        /// <summary>テストから指定するマニュアル起動結果</summary>
+        public ManualOpenResult Result { get; set; } = ManualOpenResult.Success;
+
+        /// <summary>呼び出し回数を記録して指定結果を返却</summary>
+        public ManualOpenResult Open()
+        {
+            OpenCount++;
+            return Result;
+        }
+    }
+
     /// <summary>画面を開かず利用者操作をキャンセルとして返すUI境界</summary>
     private sealed class StubDialogService : IDialogService
     {
@@ -220,6 +270,9 @@ public sealed class MainWindowViewModelTests
 
         /// <summary>削除確認で返す利用者選択</summary>
         public bool ConfirmDelete { get; set; }
+
+        /// <summary>直近に表示を依頼されたエラーメッセージ</summary>
+        public string? LastErrorMessage { get; private set; }
 
         /// <summary>編集画面を表示せずキャンセル結果を返却</summary>
         public async Task<WatchTarget?> ShowTargetEditorAsync(
@@ -241,8 +294,11 @@ public sealed class MainWindowViewModelTests
             Task.FromResult(ConfirmDelete);
 
         /// <summary>テストではエラー画面を表示せず完了</summary>
-        public Task ShowErrorAsync(string message, CancellationToken cancellationToken) =>
-            Task.CompletedTask;
+        public Task ShowErrorAsync(string message, CancellationToken cancellationToken)
+        {
+            LastErrorMessage = message;
+            return Task.CompletedTask;
+        }
     }
 
     /// <summary>Coreイベントを呼び出し元スレッドで即時反映するUIスレッド境界</summary>
