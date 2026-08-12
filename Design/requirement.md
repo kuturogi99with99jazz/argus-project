@@ -1,17 +1,17 @@
-﻿# Argus 要件定義書（ドラフト）
+# Argus 要件定義書（ドラフト）
 
 ## 1. 文書情報
 
 - 文書名: Argus 要件定義書
 - ステータス: 承認済み
-- 対象: 初期 MVP、Avalonia UI PoC
+- 対象: Avalonia 正式版 v0.2.0
 - 情報源: `Design/project-overview.md`
 - 作成日: 2026-07-15
-- 最終更新日: 2026-08-11
+- 最終更新日: 2026-08-12
 
-本書は、`Design/project-overview.md` に記載された構想から、Argus の初期 MVP と、初期 MVP 完了後に実施する Avalonia UI PoC に必要な要件を抽出して整理したものです。
+本書は、`Design/project-overview.md` に記載された構想から、Avalonia を唯一の正式 UI とする Argus v0.2.0 の要件を整理したものです。
 
-「今後の予定」として記載された内容は初期 MVP の必須要件に含めず、将来候補として分離します。プロジェクト構想だけでは判断できない事項は「要確認事項」として記載します。
+「今後の予定」として記載された内容は v0.2.0 の必須要件に含めず、将来候補として分離します。
 
 ---
 
@@ -67,7 +67,7 @@ Argus の目的は、ユーザーが任意のタイミングで更新チェッ�
 - HTML 全体比較または CSS セレクタ比較を監視対象ごとに選択できる
 - チェック結果を一覧へ反映する
 - 正常終了したチェック結果を JSON ファイルへ保存する
-- 選択した監視対象の URL を Windows の既定ブラウザで開く
+- 選択した監視対象の URL を OS の既定ブラウザで開く
 
 ### 5.2 初期 MVP の対象外
 
@@ -86,37 +86,24 @@ Argus の目的は、ユーザーが任意のタイミングで更新チェッ�
 - 差分内容の表示
 - チェック履歴の表示
 - 最新話 URL を直接開く機能
-- Wails、Tauri、Avalonia など、WinForms 以外の UI 技術への移行
+- Wails、Tauri など、Avalonia 以外の UI 技術への移行
 
-### 5.3 Avalonia UI PoC の対象
+### 5.3 Avalonia 正式版の対象
 
-Avalonia UI PoC は初期 MVP とは別の評価フェーズとし、既存 WinForms 版を残したまま、同じ Core を利用する代替フロントエンドを追加します。
-
-対象:
-
-- `Argus.Avalonia` を `.NET 8` のデスクトップアプリとして追加する
-- 現行 WinForms 版の一覧表示、追加、編集、削除、全件チェック、選択項目チェック、結果表示、ブラウザ起動、アプリ情報表示を再実装する
+- `Argus` を `.NET 8` と Avalonia で実装する唯一の正式 UI とする
+- Windows 10 / Windows 11 x64 と macOS 14 以降 Apple Silicon を正式サポートする
 - `Argus.Core` のモデル、永続化、取得、比較、チェック調停処理を再利用する
-- 現行の schema v1 JSON を読み書きする
-- Windows 10 / Windows 11 を主要な開発・品質確認環境とする
-- macOS では VS Code と .NET CLI を用いて、起動と代表操作の互換性を軽量に確認する
+- 現行の schema v1 JSON と Windows の既存保存データを維持する
+- Windows は自己完結型 single-file executable、macOS は自己完結型 `Argus.app` を配布する
+- WinForms 版とそのテストは正式採用時に廃止する
 
-対象外:
-
-- WinForms 版の削除、全面改修、または正式版からの置き換え
-- Core の大規模な再設計
-- JSON スキーマ、既存データ、保存方式の変更
-- WinForms 版と Avalonia 版の同時起動を保証するプロセス間排他
-- Linux でのビルドまたは動作確認
-- Avalonia 版の UI 自動テスト
-- macOS での全機能網羅、UI 詳細、配布パッケージの検証
-- Avalonia への正式移行判断
+Linux、Intel Mac、Apple Developer 署名・公証、インストーラー、自動更新は v0.2.0 の対象外とします。
 
 ---
 
 ## 6. 利用者
 
-初期 MVP の利用者は、Windows 10 または Windows 11 を使用し、複数の公開 Web ページの更新有無を任意のタイミングで確認したい個人ユーザーとします。
+利用者は、Windows 10 / Windows 11 x64 または macOS 14 以降 Apple Silicon を使用し、複数の公開 Web ページの更新有無を任意のタイミングで確認したい個人ユーザーとします。
 
 初期 MVP では複数ユーザー、アカウント、権限管理を扱いません。
 
@@ -317,12 +304,12 @@ Argus は、チェックに失敗した監視対象の前回データを上書�
 
 ### FR-011 既定ブラウザで開く
 
-Argus は、ユーザーが選択した監視対象の URL を Windows の既定ブラウザで開けなければなりません。
+Argus は、ユーザーが選択した監視対象の URL を OS の既定ブラウザで開けなければなりません。
 
 受け入れ条件:
 
 - 一覧から監視対象を選択して、その URL を開く操作を実行できる
-- URL が Windows の既定ブラウザで開かれる
+- URL が OS の既定ブラウザで開かれる
 - URL を開けない場合にアプリが異常終了しない
 
 ### FR-012 監視対象の追加・編集・削除
@@ -376,15 +363,15 @@ Copyright © 2026 SIA-ACT
 - Release構成でビルドしたアプリには `DEBUG` が表示されない
 - バージョン番号とデバッグ表示が、通常の操作やメッセージ表示を妨げない
 
-### FR-016 Avalonia UI PoC
+### FR-016 Avalonia クロスプラットフォーム UI
 
-Argus は、既存 WinForms 版と並存し、同じ Core ロジックを利用する Avalonia UI 版を試験的に起動できなければなりません。
+Argus は、同じ Core ロジックを利用する Avalonia UI として正式に動作しなければなりません。
 
 受け入れ条件:
 
-- `Argus.Avalonia` から `Argus.Core` を参照し、Core から Avalonia または WinForms を参照しない
-- Windows 10 / Windows 11 上で Avalonia 版を起動できる
-- JSON 読み込みエラー時の操作制限を含め、現行 WinForms 版と同じ監視対象一覧を表示できる
+- `Argus` から `Argus.Core` を参照し、Core から Avalonia を参照しない
+- Windows 10 / Windows 11 x64 と macOS 14 以降 Apple Silicon で起動できる
+- JSON 読み込みエラー時の操作制限を含め、監視対象一覧を表示できる
 - 監視対象を追加、編集、削除できる
 - 全件チェックと選択項目チェックを実行し、結果を一覧へ反映できる
 - HTML テキスト、HTML 全体、CSS セレクタの各比較方式を利用できる
@@ -395,8 +382,8 @@ Argus は、既存 WinForms 版と並存し、同じ Core ロジックを利用�
 - 一覧の各列は内容を判読できる最小幅を維持し、一つの列を広げても他の列を最小幅未満へ縮めない
 - 一覧には横方向と縦方向のスクロールバーを表示し、画面内へ収まらない列と行へ移動できる
 - 正常結果だけを現行 schema v1 JSON へ保存し、エラー時は前回の正常データを上書きしない
-- WinForms 版の既存機能、ビルド、テストを壊さない
-- macOS 上で Avalonia 版を起動し、JSON 読み込み、一覧表示、1 件の手動チェック、既定ブラウザ起動を確認できる
+- アプリ名、成果物名、画面上の製品名を `Argus` に統一する
+- Windows と macOS の双方で JSON 読み込み、一覧表示、手動チェック、既定ブラウザ起動を確認できる
 
 ---
 
@@ -404,20 +391,20 @@ Argus は、既存 WinForms 版と並存し、同じ Core ロジックを利用�
 
 ### NFR-001 対応環境
 
-- Windows 10 および Windows 11 を対象とする
-- UI には WinForms を使用する
+- Windows 10 / Windows 11 x64 と macOS 14 以降 Apple Silicon を対象とする
+- UI には Avalonia を使用する
 - C# および .NET 8 以降を使用する
 
 ### NFR-002 配布
 
-Windows版の配布形式は、.NETランタイムを同梱したself-contained single-file executableとします。WinForms正式版に加え、Avalonia PoCもVisual Studio 2022の発行プロファイルからWindows x64向けの単一EXEを生成できるようにします。
+Windows版は.NETランタイムを同梱したself-contained single-file executable、macOS版は.NETランタイムを同梱したself-contained app bundleとします。
 
 備考:
 
-- 初期配布対象はWindows x64とします。
-- Avalonia PoCのWindows発行物は `Argus.Avalonia.exe` 1ファイルとし、対象PCへの.NETランタイムの事前導入を不要とします。
-- Avalonia PoCでは互換性を優先してトリミングとReadyToRunを使用しません。
-- ファイルサイズと更新方法は要確認とします。
+- Windows発行物は `Argus.exe` 1ファイルとする
+- macOS発行物は `osx-arm64` の `Argus.app` とする
+- 互換性を優先してトリミングとReadyToRunを使用しない
+- Apple Developer署名と公証は後続タスクとする
 
 ### NFR-003 データ永続化
 
@@ -436,7 +423,7 @@ Windows版の配布形式は、.NETランタイムを同梱したself-contained 
 
 - UI 処理と更新チェックロジックを分離する
 - HTML 取得、正規化、比較、保存の責務を分離する
-- 将来 WinForms 以外の UI へ再構築する場合に、チェックロジックを再利用できる構成とする
+- Avalonia を変更する場合にもチェックロジックを再利用できる構成とする
 
 ### NFR-006 操作方針
 
@@ -456,9 +443,9 @@ Windows版の配布形式は、.NETランタイムを同梱したself-contained 
 
 ### NFR-008 UIテーマと視認性
 
-- UI全体のテーマを「夏」とする
-- 青空、海、水、白い雲、夏の日差しを想起させる、明るく爽やかな配色とする
-- 背景、文字、ボタン、選択状態、無効状態、チェック結果の色を画面間で統一する
+- Avalonia標準のFluent Themeを使用する
+- ライトを既定とし、画面上でライト／ダークを切り替えられる
+- 青系を基調に、背景、文字、ボタン、選択状態、無効状態、チェック結果を画面間で統一する
 - 文字と背景のコントラストを確保し、長時間使用しても読みにくくならないこと
 - 更新状態やエラー状態は色だけで表現せず、状態名の文字を必ず併記すること
 - 操作可能、選択中、フォーカス中、無効の各状態を視覚的に区別できること
@@ -477,13 +464,13 @@ Windows版の配布形式は、.NETランタイムを同梱したself-contained 
 - 更新状態やエラー状態は色だけで表現せず、状態名の文字を併記する
 - Core からのイベントを ViewModel へ反映する箇所以外では、UI Dispatcher への依存を増やさない
 
-### NFR-010 Avalonia UI PoC の検証環境
+### NFR-010 クロスプラットフォーム検証環境
 
 - Windows では Visual Studio Community 2022 を主要な開発・品質確認環境とする
 - Windows ではソリューション読込、NuGet 復元、Debug / Release ビルド、F5 起動、全自動テスト、全機能の手動確認を行う
-- macOS では VS Code と .NET 8 CLI を使用し、復元、ビルド、起動と代表操作を確認する
+- macOS では VS Code と .NET 8 CLI を使用し、復元、ビルド、テスト、発行、起動と全受け入れ操作を確認する
 - Avalonia 用 IDE 拡張機能は編集やプレビューの支援に限定し、ビルドの必須条件にしない
-- macOS での確認結果は互換性の参考とし、PoC の合否は Windows での検証結果を基準に判断する
+- Windows と macOS の双方の検証を v0.2.0 の完了条件とする
 
 ---
 
@@ -572,7 +559,6 @@ Windows版の配布形式は、.NETランタイムを同梱したself-contained 
 - チェック履歴
 - UI 改善
 - Wails、Tauri などによる再構築
-- Avalonia UI PoC の結果を踏まえた正式移行
 
 将来候補を実装対象へ移す場合は、本書へ要件を追加してから設計とタスクを更新します。
 
@@ -598,11 +584,11 @@ Windows版の配布形式は、.NETランタイムを同梱したself-contained 
 
 ---
 
-## 13. 初期 MVP の完了判定
+## 13. 機能の完了判定
 
-初期 MVP は、少なくとも次の条件をすべて満たした場合に完了とします。
+機能実装は、少なくとも次の条件をすべて満たした場合に完了とします。
 
-- Windows 上で WinForms アプリを起動できる
+- Windows と macOS 上で Avalonia アプリを起動できる
 - JSON から複数の監視対象を読み込める
 - 読み込んだ監視対象を一覧表示できる
 - 監視対象を画面から追加、編集、削除できる
@@ -616,9 +602,9 @@ Windows版の配布形式は、.NETランタイムを同梱したself-contained 
 - 正常終了したチェック結果を JSON へ保存できる
 - エラー時に前回の正常データが保持される
 - アプリ再起動後も保存した前回データを利用できる
-- 選択した監視対象を Windows の既定ブラウザで開ける
+- 選択した監視対象を OS の既定ブラウザで開ける
 - UI とチェックロジックが分離されている
-- 「夏」をテーマにした配色がメイン画面と監視対象編集画面へ一貫して適用されている
+- Fluent Themeとライト／ダーク表示がメイン画面と監視対象編集画面へ一貫して適用されている
 - 状態や操作可否を色だけに依存せず識別できる
 - メイン画面で `Copyright © 2026 SIA-ACT` を確認できる
 - メイン画面でバージョン番号を確認できる
@@ -628,16 +614,15 @@ Windows版の配布形式は、.NETランタイムを同梱したself-contained 
 
 ---
 
-## 14. Avalonia UI PoC の完了判定
+## 14. Avalonia 正式採用決定と v0.2.0 完了判定
 
-Avalonia UI PoC は、少なくとも次の条件をすべて満たした場合に完了とします。
+2026-08-12、PoCで Core を変更せず再利用でき、Windowsでビルド、自動テスト、起動、single-file発行を確認できた結果を受け、Avaloniaを唯一の正式UIとして採用しました。WinForms版はv0.2.0で廃止します。
 
-- Windows の Visual Studio 2022 でソリューション全体を読み込み、Debug / Release ビルドできる
-- Windows で WinForms 版と Avalonia 版をそれぞれ F5 起動できる
-- Avalonia 版で FR-016 に定めた現行機能を利用できる
-- Core、WinForms、Avalonia の全自動テストが Windows で成功する
-- schema v1 JSON とエラー時のデータ保護が維持される
-- WinForms 版の既存機能へ回帰がない
-- macOS の VS Code と .NET CLI で復元、ビルド、起動が成功する
-- macOS で JSON 読み込み、一覧表示、1 件の手動チェック、既定ブラウザ起動を確認できる
-- Core 再利用結果、WinForms 版への影響、全面移行時の課題、全面移行推奨度を記録する
+v0.2.0は、少なくとも次の条件をすべて満たした場合に完了とします。
+
+- WindowsでDebug / Releaseビルド、全自動テスト、`Argus.exe`の発行と起動が成功する
+- Apple Silicon搭載macOS 14以降で復元、ビルド、全自動テスト、`Argus.app`の発行と起動が成功する
+- 両OSでFR-001～FR-016の操作、ライト／ダーク表示、キーボード操作、ダイアログ、アイコン、`v0.2.0`表示を確認する
+- schema v1 JSON、Windowsの既存保存先、エラー時のデータ保護が維持される
+- WinFormsプロジェクトと参照がソリューションおよび現行文書から除去されている
+- 要件、設計、タスク、README、マニュアル、実装、テストが一致する

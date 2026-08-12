@@ -1,62 +1,51 @@
-# Release 発行物の手動確認手順
+# v0.2.0 Release 発行物の手動確認手順
 
-## 目的
+## 共通確認
 
-Visual Studio 2022でWindows x64向けのRelease発行物を作成し、発行先とは別の場所から起動して、初期MVPの手動確認を行います。
+1. `dotnet restore`、`dotnet build Argus.sln -c Release`、`dotnet test Argus.sln -c Release`を実行する
+2. 発行先とは別のディレクトリへ成果物をコピーして起動する
+3. schema v1 JSONの読込、一覧、CRUD、全件／選択チェック、4状態、エラー時データ保持、ブラウザ起動を確認する
+4. ライト／ダーク、キーボード、ダイアログ、アイコン、`v0.2.0`、Releaseで`DEBUG`非表示を確認する
 
-## 発行手順
+## Windows 10 / 11 x64
 
-1. `Argus.sln` をVisual Studio 2022で開く
-2. ソリューション構成を `Release` にする
-3. `Argus.WinForms` プロジェクトを右クリックし、「発行」を選択する
-4. 発行先として「フォルダー」を選択する
-5. 発行先を次のフォルダーに設定する
-
-   ```text
-   C:\workspace\source\repos\Argus\artifacts\Argus-win-x64-single
-   ```
-
-6. 発行設定を次のとおりにする
-
-   | 設定 | 値 |
-   | --- | --- |
-   | 構成 | `Release` |
-   | 配置モード | `自己完結` |
-   | ターゲット ランタイム | `win-x64` |
-   | 単一ファイルの生成 | 有効 |
-   | ネイティブ ライブラリを単一ファイルに含める | 有効 |
-
-7. 「発行」を実行する
-
-## 確認する実行ファイル
-
-発行後、次の実行ファイルを使用します。
-
-```text
-artifacts\Argus-win-x64-single\Argus.WinForms.exe
+```powershell
+dotnet publish Argus/Argus.csproj `
+  -p:PublishProfile=Windows-x64-SingleFile
 ```
 
-発行先フォルダーをデスクトップなど別の場所へフォルダーごとコピーし、コピー先の `Argus.WinForms.exe` を起動します。
+確認対象:
 
-## 手動確認項目
+```text
+artifacts\Argus-win-x64-single\Argus.exe
+```
 
-- JSONファイルがない状態で起動し、監視対象を追加できる
-- アプリを再起動し、監視対象が復元される
-- 初回取得、更新なし、更新あり、通信エラーを確認できる
-- 全件チェック、選択チェック、重複チェックを実行できる
-- エラー発生時に前回の正常なスナップショットが失われない
-- 監視対象を編集・削除できる
-- 既定ブラウザで対象URLを開ける
-- 夏テーマ、状態名、選択、フォーカス、無効状態が確認できる
-- コピーライト、バージョン、`DEBUG` / `RELEASE` 表示を確認できる
+- 配布必須ファイルが`Argus.exe` 1ファイルだけであること
+- .NETランタイムを別途必要とせず起動すること
+- `%APPDATA%\Argus\targets.json`の既存データを移行なしで利用できること
 
-## 使用しない実行ファイル
+## macOS 14以降 Apple Silicon
 
-次の場所にあるファイルは、Release発行物の手動確認には使用しません。
+macOS実機上で実行します。
 
-- `bin\Debug\...`: 開発・デバッグ用
-- `bin\Release\...`: 通常のビルド成果物
-- `Argus.WinForms.Tests\bin\...`: テスト実行用
-- `obj\...`: ビルド中間生成物
+```bash
+dotnet publish Argus/Argus.csproj \
+  -p:PublishProfile=macOS-arm64-AppBundle
+```
 
-確認対象は、Visual Studioの発行先に生成された `artifacts\Argus-win-x64-single\Argus.WinForms.exe` です。
+確認対象:
+
+```text
+artifacts/Argus-macos-arm64/Argus.app
+```
+
+- `Contents/Info.plist`、`Contents/MacOS/Argus`、`Contents/Resources/argus-app-icon.icns`が存在すること
+- 発行先とは別の場所から`Argus.app`を起動できること
+- `~/Library/Application Support/Argus/targets.json`へ保存し、再起動後も利用できること
+- 既定ブラウザ起動が成功すること
+
+v0.2.0ではApple Developer署名と公証を行いません。Gatekeeperによる初回起動制限が発生した場合は検証記録へ残します。
+
+## 記録
+
+OSバージョン、CPU、.NET SDK、発行コマンド、成果物サイズ、テスト結果、手動確認結果を`Design/tasks.md`のT-032へ記録します。実行していないOSの項目は完了扱いにしません。

@@ -1,16 +1,16 @@
-﻿# Argus 実装タスク（初期 MVP・Avalonia UI PoC）
+# Argus 実装タスク（初期 MVP・Avalonia UI PoC）
 
 ## 1. 文書情報
 
 - 文書名: Argus 実装タスク
 - ステータス: 承認済み
-- 対象: 初期 MVP、Avalonia UI PoC
+- 対象: Avalonia 正式版 v0.2.0（初期MVPとPoCの履歴を含む）
 - 対応要件: `Design/requirement.md`
 - 対応設計: `Design/design.md`
 - 作成日: 2026-07-22
 - 最終更新日: 2026-08-11
 
-本書は、Argus 初期 MVP と Avalonia UI PoC を仕様駆動開発（SDD）とテスト駆動開発（TDD）で実装するための作業計画です。
+本書は、Argus の実装履歴と、Avalonia を唯一の正式UIへ昇格する v0.2.0 の作業計画です。
 
 ---
 
@@ -90,7 +90,11 @@ dotnet test Argus.sln
 | T-025 | Avaloniaプロジェクトとテスト基盤 | FR-016, NFR-009, NFR-010 | T-024 | 実装完了（F5確認待ち） |
 | T-026 | Avalonia ViewModelと表示変換 | FR-016, NFR-009 | T-025 | 完了 |
 | T-027 | Avalonia全画面機能 | FR-016, NFR-009 | T-026 | 実装完了（手動確認待ち） |
-| T-028 | Avalonia PoC総合検証と評価 | FR-016, NFR-009, NFR-010 | T-027 | 進行中 |
+| T-028 | Avalonia PoC総合検証と評価 | FR-016, NFR-009, NFR-010 | T-027 | 完了（正式採用へ移行） |
+| T-029 | Avalonia正式採用の仕様更新 | FR-016, NFR-001, NFR-002, NFR-009, NFR-010 | T-028 | 完了 |
+| T-030 | Argusプロジェクトへの一本化 | FR-001～FR-016 | T-029 | 完了 |
+| T-031 | Windows・macOS配布と利用文書 | NFR-001, NFR-002 | T-030 | 完了 |
+| T-032 | v0.2.0クロスプラットフォーム総合検証 | FR-001～FR-016, NFR-001～NFR-010 | T-031 | 進行中 |
 
 ---
 
@@ -1239,6 +1243,104 @@ Avalonia導入難易度: 中
 
 ---
 
+### T-029 Avalonia正式採用の仕様更新
+
+- ステータス: 完了
+- 対応要件: FR-016, NFR-001, NFR-002, NFR-009, NFR-010
+- 依存タスク: T-028
+
+#### 実施内容
+
+- Avaloniaを唯一の正式UI、WinFormsを廃止対象として要件、設計、構想、作業規則を更新する
+- Windows 10 / 11 x64とmacOS 14以降 Apple Siliconを正式対象とする
+- v0.2.0、成果物名`Argus`、schema v1と既存Windowsデータの互換性維持を確定する
+
+#### TDD例外・検証
+
+仕様決定はテスト先行対象外とし、4仕様文書とAGENTSの相互レビューで検証します。
+
+### T-030 Argusプロジェクトへの一本化
+
+- ステータス: 完了
+- 対応要件: FR-001～FR-016, NFR-005, NFR-007, NFR-009
+- 依存タスク: T-029
+
+#### Red
+
+- 正式名称、`v0.2.0`、ViewModelの既存振る舞いを表すテストを`Argus.Tests`として先に移行する
+- WinForms参照が残っていないことをプロジェクト構造の検証条件へ追加する
+
+#### Green
+
+- `Argus.Avalonia`を`Argus`、テストを`Argus.Tests`へ改名する
+- 名前空間、プロジェクト参照、XMLコメント、アセンブリ名を正式名称へ統一する
+- WinFormsプロジェクトとテストをソリューションおよびリポジトリから削除する
+
+#### 完了条件
+
+- ソリューションがCore、Core.Tests、Argus、Argus.Testsの4プロジェクトだけで構成される
+- CoreからAvaloniaへの参照がなく、schema v1とCore公開APIに変更がない
+- Debug / Releaseの全自動テストが成功する
+
+#### 実施結果（2026-08-12）
+
+- `Argus`、`Argus.Tests`へ改名し、名前空間とAvaloniaリソースURIを正式名称へ統一した
+- WinForms本体とテストを削除し、ソリューションをCore、Core.Tests、Argus、Argus.Testsの4プロジェクトへ一本化した
+- 先行移行したUIテストが未実装の`Argus`参照で失敗するRedを確認後、14件成功へ移行した
+
+### T-031 Windows・macOS配布と利用文書
+
+- ステータス: 完了
+- 対応要件: NFR-001, NFR-002
+- 依存タスク: T-030
+
+#### 実施内容
+
+- Windows x64向け自己完結型single-file `Argus.exe`を発行する
+- macOS arm64向け自己完結型`Argus.app`のプロファイル、`Info.plist`、アイコンを追加する
+- README、リリース確認手順、HTMLマニュアルを正式版の名称、OS、起動方法、保存先へ更新する
+
+#### TDD例外・検証
+
+発行設定と文書はテスト先行対象外とし、Windows発行・起動スモーク、macOS実機確認、リンク・画像・記載内容の目視確認を代替検証とします。
+
+#### 実施結果（2026-08-12）
+
+- Windows x64向け98,327,730バイトの`Argus.exe` 1ファイルを発行した
+- macOS arm64向け`Argus.app`をクロス発行し、`Info.plist`、実行ファイル、ネイティブライブラリ、ICNSアイコンの構造を確認した
+- README、発行確認手順、HTMLマニュアル、Avalonia正式版のスクリーンショットを更新した
+- macOS実機での起動と操作はT-032の未完了受け入れ確認として残した
+
+### T-032 v0.2.0クロスプラットフォーム総合検証
+
+- ステータス: 進行中
+- 対応要件: FR-001～FR-016, NFR-001～NFR-010
+- 依存タスク: T-031
+
+#### 自動検証
+
+- WindowsとApple Silicon搭載macOSでrestore、Debug / Release build、全自動テストを実行する
+- Windowsでsingle-file、macOSでapp bundleを発行し、別ディレクトリから起動する
+
+#### 手動確認
+
+- 両OSで初回起動、JSON再読込、CRUD、全件／選択チェック、4状態、エラー時データ保持、ブラウザ起動を確認する
+- ライト／ダーク、キーボード、ダイアログ、アイコン、`v0.2.0`表示を確認する
+
+#### 完了条件
+
+- `Design/requirement.md` 14章のv0.2.0完了判定をすべて満たす
+- 実行できないOS固有検証を完了扱いにせず、環境と残件を記録する
+
+#### 現在の検証結果（2026-08-12）
+
+- Windows Debug / Release: 警告0でビルド成功、Core 67件とArgus 14件の計81件がすべて成功
+- Windows発行物: 別の一時ディレクトリから起動し、5秒後も稼働、製品名`Argus`、バージョン`0.2.0.0`を確認
+- macOSクロス発行: `osx-arm64`の`Argus.app`生成とバンドル構造をWindows上で確認
+- 未確認: Apple Silicon搭載macOS 14以降でのrestore / build / test / 起動、全受け入れ操作、別ディレクトリからのapp起動
+
+---
+
 ## 6. 要件トレーサビリティ
 
 | 要件 | 対応タスク |
@@ -1258,17 +1360,17 @@ Avalonia導入難易度: 中
 | FR-013 | T-015, T-017 |
 | FR-014 | T-019 |
 | FR-015 | T-019 |
-| FR-016 | T-024～T-028 |
-| NFR-001 | T-001, T-017 |
-| NFR-002 | T-017 |
+| FR-016 | T-024～T-030, T-032 |
+| NFR-001 | T-001, T-017, T-029, T-031, T-032 |
+| NFR-002 | T-017, T-029, T-031, T-032 |
 | NFR-003 | T-003, T-004, T-017 |
 | NFR-004 | T-006, T-007, T-017 |
 | NFR-005 | T-001, T-002～T-010, T-016, T-017 |
 | NFR-006 | T-009, T-013, T-016, T-017 |
 | NFR-007 | T-001～T-017 |
 | NFR-008 | T-014, T-017 |
-| NFR-009 | T-024～T-028 |
-| NFR-010 | T-024, T-025, T-028 |
+| NFR-009 | T-024～T-030, T-032 |
+| NFR-010 | T-024, T-025, T-028, T-029, T-032 |
 
 ---
 
@@ -1286,9 +1388,9 @@ Avalonia導入難易度: 中
 - 外部データベース連携
 - 永続ログ
 - JSONバックアップ
-- Windows arm64配布
+- Windows arm64配布、Intel Mac、Linux対応
+- Apple Developer署名・公証、インストーラー、自動更新
 - Wails、Tauriへの移行
-- Avalonia PoC後の正式移行とWinForms版の廃止
 
 ---
 

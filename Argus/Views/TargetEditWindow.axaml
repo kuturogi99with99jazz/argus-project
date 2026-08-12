@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Argus.ViewModels"
+        x:Class="Argus.Views.TargetEditWindow"
+        x:DataType="vm:TargetEditViewModel"
+        Title="{Binding Title}"
+        Icon="avares://Argus/Assets/argus-app-icon.ico"
+        Width="560"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppWindowBackgroundBrush}">
+  <Border Margin="20" Padding="22" Background="{DynamicResource AppPanelBackgroundBrush}" BorderBrush="{DynamicResource AppPanelBorderBrush}" BorderThickness="1">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
+      <StackPanel Spacing="6">
+        <TextBlock FontSize="24" FontWeight="SemiBold" Text="{Binding Title}" />
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="登録内容を整えて、そのままチェックに使える形にまとめます" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="1" Spacing="4">
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="名前" />
+        <TextBox Text="{Binding Name}" PlaceholderText="例: 公式サイト" />
+        <TextBlock Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="{Binding NameError}" TextWrapping="Wrap" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="2" Spacing="4">
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="URL" />
+        <TextBox Text="{Binding Url}" PlaceholderText="https://example.com/" />
+        <TextBlock Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="{Binding UrlError}" TextWrapping="Wrap" />
+      </StackPanel>
+
+      <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+        <StackPanel Spacing="4">
+          <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="監視モード" />
+          <ComboBox ItemsSource="{Binding ModeOptions}" SelectedItem="{Binding SelectedModeOption}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:WatchModeOption">
+                <TextBlock Text="{Binding DisplayName}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+        <CheckBox Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding IsEnabled}" Content="有効" />
+      </Grid>
+
+      <StackPanel Grid.Row="4" Spacing="4" IsVisible="{Binding IsCssSelectorVisible}">
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="CSS セレクタ" />
+        <TextBox Text="{Binding CssSelector}" PlaceholderText="例: main article" />
+        <TextBlock Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="{Binding CssSelectorError}" TextWrapping="Wrap" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="5" Spacing="4">
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="メモ" />
+        <TextBox MinHeight="84" AcceptsReturn="True" Text="{Binding Memo}" TextWrapping="Wrap" />
+        <TextBlock Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="{Binding OperationError}" TextWrapping="Wrap" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="6" Margin="0,4,0,0" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Command="{Binding CancelCommand}" Content="キャンセル" />
+        <Button Classes="primary" Command="{Binding SaveCommand}" Content="保存" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

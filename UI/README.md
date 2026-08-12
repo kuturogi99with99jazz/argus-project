@@ -1,4 +1,4 @@
-﻿# Argus UIモック
+# Argus UIモック
 
 WinForms実装前に、画面構成と「夏」テーマの視認性を確認するためのローカル専用UIモックです。
 HTML、CSS、Vanilla JavaScriptだけで構成しており、外部サービスや実際のWebサイトへ接続しません。

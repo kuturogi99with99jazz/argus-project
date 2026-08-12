@@ -497,7 +497,7 @@
       <h1>ユーザーマニュアル</h1>
       <p class="hero-copy">登録したWebページを、必要なときにまとめて確認。初めて使う方も、判定に迷った方も、このページだけで操作と考え方が分かります。</p>
       <ul class="hero-meta" aria-label="対応情報">
-        <li>Windows 10 / 11</li>
+        <li>Windows / macOS</li>
         <li>手動チェック専用</li>
         <li>HTML・CSSセレクタ対応</li>
       </ul>
@@ -525,7 +525,7 @@
     <main id="content">
       <section id="start">
         <h2><span class="num">Section 01</span>はじめに</h2>
-        <p class="lead">Argusは、Webページを自動巡回する監視サービスではなく、あなたがボタンを押したときに更新の有無をまとめて調べるWindowsアプリです。</p>
+        <p class="lead">Argusは、Webページを自動巡回する監視サービスではなく、あなたがボタンを押したときに更新の有無をまとめて調べるAvaloniaデスクトップアプリです。</p>
 
         <div class="callout success">
           <p><strong>Argusが向いていること</strong><br>ブログ、お知らせ、配布ページ、更新履歴など、ログイン不要の公開ページを定期的に確認すること。</p>
@@ -533,13 +533,13 @@
 
         <h3>必要なもの</h3>
         <ul>
-          <li>Windows 10 または Windows 11（x64）</li>
+          <li>Windows 10 / 11（x64）、またはmacOS 14以降（Apple Silicon）</li>
           <li>インターネット接続</li>
           <li><code>http://</code> または <code>https://</code> で公開されている確認先ページ</li>
         </ul>
 
         <h3>起動方法</h3>
-        <p>配布された <code>Argus.WinForms.exe</code> をダブルクリックします。初回起動時は一覧が空なので、まず監視対象を1件登録します。</p>
+        <p>Windowsでは<code>Argus.exe</code>、macOSでは<code>Argus.app</code>を開きます。初回起動時は一覧が空なので、まず監視対象を1件登録します。</p>
         <div class="callout warning">
           <p><strong>自動ではチェックされません。</strong> 更新を確認したいときにArgusを起動し、「全件チェック」または「選択をチェック」を実行してください。</p>
         </div>
@@ -564,8 +564,8 @@
       <section id="main-screen">
         <h2><span class="num">Section 03</span>メイン画面の見方</h2>
         <figure>
-          <img src="main.webp" width="800" height="531" alt="Argusのメイン画面。上部にチェックと管理のボタン、中央に監視対象一覧、下部にメッセージとバージョンを表示">
-          <figcaption>メイン画面。個々の名前とURLはプライバシー保護のため画像内で伏せています。</figcaption>
+          <img src="main.png" width="1120" height="747" alt="ArgusのAvaloniaメイン画面。上部にチェックと管理のボタン、中央に架空の監視対象一覧、下部にメッセージとv0.2.0を表示">
+          <figcaption>Avalonia正式版のメイン画面。名前とURLはマニュアル用の架空データです。</figcaption>
         </figure>
 
         <h3>上部のボタン</h3>
@@ -667,8 +667,8 @@
 
         <h3 id="whole-html-example">例1：HTML全体比較を試す</h3>
         <figure>
-          <img src="entry.webp" width="636" height="539" alt="監視対象追加画面にExample DomainのURLとHTML全体比較を設定した例">
-          <figcaption>HTML全体比較の入力例</figcaption>
+          <img src="entry.png" width="560" height="618" alt="Avalonia正式版の監視対象追加画面">
+          <figcaption>監視対象追加画面。次の表の値を入力します。</figcaption>
         </figure>
         <div class="table-wrap">
           <table>
@@ -684,8 +684,8 @@
 
         <h3 id="selector-example">例2：見出しだけを確認する</h3>
         <figure>
-          <img src="entry-css-selector.webp" width="636" height="539" alt="監視対象追加画面にExample DomainのURL、CSSセレクタ比較、h1を設定した例">
-          <figcaption>CSSセレクタ比較の入力例</figcaption>
+          <img src="entry.png" width="560" height="618" alt="Avalonia正式版の監視対象追加画面。CSSセレクタ比較を選ぶと専用入力欄が表示される">
+          <figcaption>同じ追加画面でCSSセレクタ比較を選び、次の表の値を入力します。</figcaption>
         </figure>
         <div class="table-wrap">
           <table>
@@ -755,7 +755,7 @@
       <section id="manage">
         <h2><span class="num">Section 08</span>編集・削除・ブラウザ表示</h2>
         <h3>ブラウザで開く</h3>
-        <p>一覧から1件を選択して「ブラウザで開く」をクリックすると、登録URLがWindowsの既定ブラウザで開きます。</p>
+        <p>一覧から1件を選択して「ブラウザで開く」をクリックすると、登録URLがOSの既定ブラウザで開きます。</p>
 
         <h3>登録内容を編集する</h3>
         <ol>
@@ -788,7 +788,7 @@
       <section id="data">
         <h2><span class="num">Section 09</span>データの保存と安全性</h2>
         <p>監視対象と前回の正常なチェック結果は、次のJSONファイルに自動保存されます。</p>
-        <div class="callout"><p><code>%APPDATA%\Argus\targets.json</code></p></div>
+        <div class="callout"><p>Windows: <code>%APPDATA%\Argus\targets.json</code><br>macOS: <code>~/Library/Application Support/Argus/targets.json</code></p></div>
         <p>追加、編集、削除、正常なチェックの完了時に更新されます。通常、このファイルを手動で編集する必要はありません。</p>
         <ul>
           <li>チェックがエラーになっても、前回の正常な比較データは保持されます。</li>
@@ -851,7 +851,7 @@
 
         <details>
           <summary>ブラウザで開けない</summary>
-          <div class="details-body"><p>登録URLと、Windowsの既定ブラウザ設定を確認してください。URLを編集した場合は、次の正常なチェックが「初回取得」になる点にも注意してください。</p></div>
+          <div class="details-body"><p>登録URLと、OSの既定ブラウザ設定を確認してください。URLを編集した場合は、次の正常なチェックが「初回取得」になる点にも注意してください。</p></div>
         </details>
       </section>
     </main>
