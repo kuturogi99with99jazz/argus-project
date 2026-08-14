@@ -36,14 +36,15 @@
                     VerticalAlignment="Center"
                     Orientation="Horizontal"
                     Spacing="12">
-          <Button VerticalAlignment="Center"
+          <Button Classes="headerAction"
+                  VerticalAlignment="Center"
                   Command="{Binding OpenManualCommand}">
             <StackPanel Orientation="Horizontal" Spacing="7">
               <PathIcon Width="16" Height="16" Data="{StaticResource IconManual}" />
               <TextBlock VerticalAlignment="Center" Text="マニュアル" />
             </StackPanel>
           </Button>
-          <ToggleButton Classes="themeToggle"
+          <ToggleButton Classes="headerAction themeToggle"
                         VerticalAlignment="Center"
                         IsChecked="{Binding IsDarkThemeEnabled}">
             <StackPanel Orientation="Horizontal" Spacing="7">

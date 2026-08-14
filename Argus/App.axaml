@@ -113,7 +113,7 @@
       <Setter Property="Foreground" Value="{DynamicResource AppDisabledForegroundBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource AppPanelBorderBrush}" />
     </Style>
-    <Style Selector="ToggleButton.themeToggle">
+    <Style Selector="Button.headerAction">
       <Setter Property="CornerRadius" Value="0" />
       <Setter Property="Padding" Value="12,7" />
       <Setter Property="Background" Value="#143152" />
@@ -134,7 +134,33 @@
         </ControlTemplate>
       </Setter>
     </Style>
-    <Style Selector="ToggleButton.themeToggle:pointerover">
+    <Style Selector="ToggleButton.headerAction">
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="Background" Value="#143152" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderBrush" Value="#7DB2FF" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Padding="{TemplateBinding Padding}"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}">
+            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Content="{TemplateBinding Content}"
+                              Foreground="{TemplateBinding Foreground}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.headerAction:pointerover">
+      <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderBrush" Value="White" />
+    </Style>
+    <Style Selector="ToggleButton.headerAction:pointerover">
       <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
       <Setter Property="Foreground" Value="White" />
       <Setter Property="BorderBrush" Value="White" />
@@ -148,9 +174,15 @@
       <Setter Property="Background" Value="{DynamicResource AppAccentHoverBrush}" />
       <Setter Property="Foreground" Value="White" />
     </Style>
-    <Style Selector="ToggleButton.themeToggle:pressed">
+    <Style Selector="Button.headerAction:pressed">
       <Setter Property="Background" Value="{DynamicResource AppAccentPressedBrush}" />
       <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderBrush" Value="White" />
+    </Style>
+    <Style Selector="ToggleButton.headerAction:pressed">
+      <Setter Property="Background" Value="{DynamicResource AppAccentPressedBrush}" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderBrush" Value="White" />
     </Style>
     <Style Selector="TextBox">
       <Setter Property="CornerRadius" Value="0" />
