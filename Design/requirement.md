@@ -90,7 +90,7 @@ Argus の目的は、ユーザーが任意のタイミングで更新チェッ�
 
 ### 5.3 Avalonia 正式版の対象
 
-- `Argus` を `.NET 8` と Avalonia で実装する唯一の正式 UI とする
+- `Argus` を `.NET 10` と Avalonia で実装する唯一の正式 UI とする
 - Windows 10 / Windows 11 x64 と macOS 14 以降 Apple Silicon を正式サポートする
 - `Argus.Core` のモデル、永続化、取得、比較、チェック調停処理を再利用する
 - 現行の schema v1 JSON と Windows の既存保存データを維持する
@@ -408,7 +408,7 @@ Argus は、Avalonia 正式版の操作方法を説明するオフラインユ�
 
 - Windows 10 / Windows 11 x64 と macOS 14 以降 Apple Silicon を対象とする
 - UI には Avalonia を使用する
-- C# および .NET 8 以降を使用する
+- C# および .NET 10 以降を使用する
 
 ### NFR-002 配布
 
@@ -483,9 +483,9 @@ Windows版は.NETランタイムを同梱したself-contained single-file execut
 
 ### NFR-010 クロスプラットフォーム検証環境
 
-- Windows では Visual Studio Community 2022 を主要な開発・品質確認環境とする
+- Windows では Visual Studio 2026 を主要な開発・品質確認環境とする
 - Windows ではソリューション読込、NuGet 復元、Debug / Release ビルド、F5 起動、全自動テスト、全機能の手動確認を行う
-- macOS では VS Code と .NET 8 CLI を使用し、復元、ビルド、テスト、発行、起動と全受け入れ操作を確認する
+- macOS では VS Code と .NET 10 CLI を使用し、復元、ビルド、テスト、発行、起動と全受け入れ操作を確認する
 - Avalonia 用 IDE 拡張機能は編集やプレビューの支援に限定し、ビルドの必須条件にしない
 - Windows と macOS の双方の検証を v0.2.0 の完了条件とする
 

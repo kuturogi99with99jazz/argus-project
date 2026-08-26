@@ -29,10 +29,10 @@ Argus.sln
 
 | プロジェクト | Target Framework | 役割 |
 | --- | --- | --- |
-| `Argus` | `net8.0` | Windows / macOS 向け正式 UI |
-| `Argus.Tests` | `net8.0` | UI を生成しないプレゼンテーション層テスト |
-| `Argus.Core` | `net8.0` | UI 非依存の業務処理と永続化 |
-| `Argus.Core.Tests` | `net8.0` | Core の単体テスト |
+| `Argus` | `net10.0` | Windows / macOS 向け正式 UI |
+| `Argus.Tests` | `net10.0` | UI を生成しないプレゼンテーション層テスト |
+| `Argus.Core` | `net10.0` | UI 非依存の業務処理と永続化 |
+| `Argus.Core.Tests` | `net10.0` | Core の単体テスト |
 
 ```mermaid
 flowchart LR

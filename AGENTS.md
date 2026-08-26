@@ -11,7 +11,7 @@ Argus は、登録した Web ページの更新有無をユーザーが手動で
 - OS: Windows 10 / Windows 11 x64、macOS 14 以降 Apple Silicon
 - UI: Avalonia
 - 言語: C#
-- フレームワーク: .NET 8 以降
+- フレームワーク: .NET 10 以降
 - 保存形式: JSON
 
 初期版では、自動監視、常駐処理、通知機能を実装しません。

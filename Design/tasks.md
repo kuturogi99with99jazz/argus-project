@@ -8,7 +8,7 @@
 - 対応要件: `Design/requirement.md`
 - 対応設計: `Design/design.md`
 - 作成日: 2026-07-22
-- 最終更新日: 2026-08-12
+- 最終更新日: 2026-08-26
 
 本書は、Argus の実装履歴と、Avalonia を唯一の正式UIへ昇格する v0.2.0 の作業計画です。
 
@@ -96,6 +96,8 @@ dotnet test Argus.sln
 | T-031 | Windows・macOS配布と利用文書 | NFR-001, NFR-002 | T-030 | 完了 |
 | T-032 | v0.2.0クロスプラットフォーム総合検証 | FR-001～FR-016, NFR-001～NFR-010 | T-031 | 進行中 |
 | T-033 | Avalonia正式マニュアルのアプリ内導線 | FR-017, NFR-002, NFR-007, NFR-009 | T-031 | 完了 |
+| T-034 | ヘッダー操作のホバー視認性修正 | NFR-008, NFR-009 | T-033 | 完了 |
+| T-035 | .NET 10移行と開発環境文書の整合 | NFR-001, NFR-007, NFR-010 | T-034 | 完了 |
 
 ---
 
@@ -1407,6 +1409,41 @@ OSの既定ブラウザ起動と画面画像の更新は自動テストだけで
 - 共通スタイル未適用を検出するXAML契約テスト2件が意図した理由で失敗することを確認した
 - マニュアルボタンとテーマ切替へ共通の `headerAction` スタイルを適用し、通常、ホバー、押下の背景、文字、枠線を統一した
 - Debug / Releaseを警告0でビルドし、Core 67件とArgus 22件の計89件がすべて成功した
+
+### T-035 .NET 10移行と開発環境文書の整合
+
+- ステータス: 完了
+- 対応要件: NFR-001, NFR-007, NFR-010
+- 対応設計: 3章、9章
+- 依存タスク: T-034
+
+#### 実施内容
+
+- `Argus`、`Argus.Core`、`Argus.Tests`、`Argus.Core.Tests` を `net10.0` へ変更する
+- .NET 10で自動提供される `System.Text.Encoding.CodePages` の明示的な参照を削除し、文字コード登録処理を維持する
+- 現行のREADME、AGENTS、要件、設計、プロジェクト構想を.NET 10およびVisual Studio 2026の開発環境へ更新する
+- 過去の.NET 8による実施結果と評価レポートは履歴として保持する
+
+#### TDD例外・検証
+
+プロジェクト設定と文書の更新は新しい業務振る舞いを追加しないため、テスト先行の対象外とする。`dotnet restore`、`dotnet build Argus.sln`、`dotnet test Argus.sln`、文字コード関連テスト、現行設定の表記検索で代替検証する。
+
+#### 完了条件
+
+- 4プロジェクトのTarget Frameworkが `net10.0` である
+- Avalonia 12.1.0、AngleSharp、xUnitなどの依存バージョンを不要に変更していない
+- 復元、ビルド、全自動テストが警告・エラーなく成功する
+- Shift-JISとEUC-JPを含む文字コード関連テストが成功する
+- 現行のプロジェクト設定、README、AGENTS、要件、設計、プロジェクト構想に `net8.0` が残っていない
+- 過去の実施履歴と評価レポートの記載を改変していない
+
+#### 実施結果（2026-08-26）
+
+- 4プロジェクトを `net10.0` へ移行し、Avalonia 12.1.0、AngleSharp 1.5.2、xUnit 2.5.3などの依存バージョンを維持した
+- .NET 10で自動提供される `System.Text.Encoding.CodePages` の参照を削除し、Shift-JISとEUC-JPを含む既存テストを維持した
+- `dotnet restore` が成功し、`dotnet build Argus.sln` は警告0・エラー0で成功した
+- `dotnet test Argus.sln` はCore 67件、Argus 22件の計89件がすべて成功した
+- 現行のプロジェクト設定と仕様文書を.NET 10およびVisual Studio 2026へ更新し、過去の.NET 8履歴と評価レポートは保持した
 
 ---
 

@@ -61,7 +61,7 @@ dotnet test Argus.sln
 dotnet run --project Argus
 ```
 
-WindowsではVisual Studio Community 2022または.NET CLI、macOSではVS Codeと.NET 8 CLIを使用します。IDE拡張は必須ではありません。
+WindowsではVisual Studio 2026または.NET CLI、macOSではVS Codeと.NET 10 CLIを使用します。IDE拡張は必須ではありません。
 
 ## 初期版で対応しないこと
 

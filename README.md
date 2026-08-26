@@ -3,7 +3,7 @@
 # Argus
 
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-1769E0)](#動作環境)
-[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](#動作環境)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](#動作環境)
 [![Version](https://img.shields.io/badge/version-0.2.0-0f766e)](Argus/Argus.csproj)
 [![License: MIT](https://img.shields.io/badge/license-MIT-f5c542)](LICENSE)
 
@@ -29,7 +29,7 @@
 | --- | --- |
 | Windows | Windows 10 / 11 x64 |
 | macOS | macOS 14以降、Apple Silicon |
-| SDK | ソースから実行する場合は.NET 8 SDK |
+| SDK | ソースから実行する場合は.NET 10 SDK |
 | UI | Avalonia 12.1.0 |
 
 署名・公証、インストーラー、自動更新、Intel Mac、Linux、Windows arm64にはまだ対応していません。
