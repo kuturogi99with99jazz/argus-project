@@ -14,9 +14,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly WatchTargetRepository repository;
     private readonly WatchTargetManagementService managementService;
     private readonly CheckCoordinator coordinator;
+    private readonly SettingsTransferService settingsTransferService;
     private readonly IBrowserService browserService;
     private readonly IManualService manualService;
     private readonly IDialogService dialogService;
+    private readonly ISettingsFileService settingsFileService;
     private readonly IUiDispatcher dispatcher;
     private readonly CancellationTokenSource applicationCancellation;
     private readonly bool isOperational;
@@ -24,15 +26,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private string statusMessage;
     private bool disposed;
     private bool isDarkThemeEnabled;
+    private bool isSettingsTransferRunning;
 
     /// <summary>CoreとUI固有サービスを手動構築で受け取り一覧状態を初期化</summary>
     public MainWindowViewModel(
         WatchTargetRepository repository,
         WatchTargetManagementService managementService,
         CheckCoordinator coordinator,
+        SettingsTransferService settingsTransferService,
         IBrowserService browserService,
         IManualService manualService,
         IDialogService dialogService,
+        ISettingsFileService settingsFileService,
         IUiDispatcher dispatcher,
         ApplicationInfo applicationInfo,
         CancellationTokenSource applicationCancellation,
@@ -41,9 +46,13 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.managementService = managementService ?? throw new ArgumentNullException(nameof(managementService));
         this.coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+        this.settingsTransferService = settingsTransferService
+            ?? throw new ArgumentNullException(nameof(settingsTransferService));
         this.browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
         this.manualService = manualService ?? throw new ArgumentNullException(nameof(manualService));
         this.dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+        this.settingsFileService = settingsFileService
+            ?? throw new ArgumentNullException(nameof(settingsFileService));
         this.dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         this.applicationCancellation = applicationCancellation ??
             throw new ArgumentNullException(nameof(applicationCancellation));
@@ -58,21 +67,21 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         CheckAllCommand = new AsyncCommand(
             (_, _) => ObserveChecksAsync(coordinator.StartAll(applicationCancellation.Token)),
-            _ => isOperational && Rows.Any(row => row.IsEnabled),
+            _ => CanUseOperationalCommands() && Rows.Any(row => row.IsEnabled),
             ReportUnexpectedError,
             applicationCancellation.Token);
         CheckSelectedCommand = new AsyncCommand(
             (_, _) => ObserveChecksAsync(coordinator.StartSelected(
                 selectedRows.Where(row => row.IsEnabled).Select(row => row.TargetId),
                 applicationCancellation.Token)),
-            _ => isOperational && selectedRows.Any(row => row.IsEnabled),
+            _ => CanUseOperationalCommands() && selectedRows.Any(row => row.IsEnabled),
             ReportUnexpectedError,
             applicationCancellation.Token);
         OpenBrowserCommand = new RelayCommand(_ => OpenBrowser(),
-            _ => isOperational && selectedRows.Count == 1);
+            _ => CanUseOperationalCommands() && selectedRows.Count == 1);
         ShowDiffCommand = new AsyncCommand(
             (_, _) => ShowDiffAsync(),
-            _ => isOperational && GetSingleSelected() is
+            _ => CanUseOperationalCommands() && GetSingleSelected() is
             {
                 Status: CheckStatus.Updated,
                 RunningCount: 0
@@ -82,17 +91,27 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         OpenManualCommand = new RelayCommand(_ => OpenManual());
         AddCommand = new AsyncCommand(
             (_, _) => AddAsync(),
-            _ => isOperational,
+            _ => CanUseOperationalCommands(),
             ReportUnexpectedError,
             applicationCancellation.Token);
         EditCommand = new AsyncCommand(
             (_, _) => EditAsync(),
-            _ => isOperational && GetSingleSelected() is { RunningCount: 0 },
+            _ => CanUseOperationalCommands() && GetSingleSelected() is { RunningCount: 0 },
             ReportUnexpectedError,
             applicationCancellation.Token);
         DeleteCommand = new AsyncCommand(
             (_, _) => DeleteAsync(),
-            _ => isOperational && GetSingleSelected() is { RunningCount: 0 },
+            _ => CanUseOperationalCommands() && GetSingleSelected() is { RunningCount: 0 },
+            ReportUnexpectedError,
+            applicationCancellation.Token);
+        ImportSettingsCommand = new AsyncCommand(
+            (_, _) => ImportSettingsAsync(),
+            _ => CanUseOperationalCommands() && !HasRunningChecks(),
+            ReportUnexpectedError,
+            applicationCancellation.Token);
+        ExportSettingsCommand = new AsyncCommand(
+            (_, _) => ExportSettingsAsync(),
+            _ => CanUseOperationalCommands(),
             ReportUnexpectedError,
             applicationCancellation.Token);
 
@@ -127,6 +146,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     /// <summary>単一選択した監視対象を確認後に削除するコマンド</summary>
     public AsyncCommand DeleteCommand { get; }
+
+    /// <summary>ポータブルJSONから監視対象設定を読み込むコマンド</summary>
+    public AsyncCommand ImportSettingsCommand { get; }
+
+    /// <summary>監視対象設定をポータブルJSONへ書き出すコマンド</summary>
+    public AsyncCommand ExportSettingsCommand { get; }
 
     /// <summary>監視対象総数を示す集計文字列</summary>
     public string TargetSummary => $"監視対象 {Rows.Count}件";
@@ -401,9 +426,138 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         StatusMessage = $"{target.Name} を削除しました。";
     }
 
+    /// <summary>確認済みポータブルJSONを検証し現在の監視対象設定へ置き換える</summary>
+    private async Task ImportSettingsAsync()
+    {
+        if (HasRunningChecks())
+        {
+            await ShowErrorAsync("チェック中は設定をインポートできません。");
+            return;
+        }
+
+        isSettingsTransferRunning = true;
+        RaiseCommandStates();
+        try
+        {
+            var path = await settingsFileService
+                .PickImportPathAsync(applicationCancellation.Token);
+            if (path is null)
+            {
+                return;
+            }
+
+            string json;
+            try
+            {
+                json = await settingsFileService
+                    .ReadAsync(path, applicationCancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                await ShowErrorAsync(
+                    "設定ファイルを読み込めませんでした。現在の設定を維持しています。");
+                return;
+            }
+
+            IReadOnlyList<WatchTarget> imported;
+            try
+            {
+                imported = settingsTransferService.Import(json);
+            }
+            catch (SettingsTransferException exception)
+            {
+                await ShowErrorAsync(exception.Message);
+                return;
+            }
+
+            if (!await dialogService.ConfirmImportSettingsAsync(
+                    repository.GetAll().Count,
+                    imported.Count,
+                    applicationCancellation.Token))
+            {
+                return;
+            }
+
+            var result = await managementService.ReplaceAllAsync(
+                imported,
+                applicationCancellation.Token);
+            if (!result.IsSuccess)
+            {
+                await ShowErrorAsync(
+                    result.ErrorMessage ??
+                    "設定をインポートできませんでした。現在の設定を維持しています。");
+                return;
+            }
+
+            ReloadRows();
+            StatusMessage = "設定をインポートしました。";
+        }
+        finally
+        {
+            isSettingsTransferRunning = false;
+            RaiseCommandStates();
+        }
+    }
+
+    /// <summary>現在の監視対象設定を選択したポータブルJSONへ書き出す</summary>
+    private async Task ExportSettingsAsync()
+    {
+        isSettingsTransferRunning = true;
+        RaiseCommandStates();
+        try
+        {
+            var path = await settingsFileService
+                .PickExportPathAsync(applicationCancellation.Token);
+            if (path is null)
+            {
+                return;
+            }
+
+            var json = settingsTransferService.Export(repository.GetAll());
+            try
+            {
+                await settingsFileService.WriteAsync(
+                    path,
+                    json,
+                    applicationCancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                await ShowErrorAsync(
+                    "設定ファイルを保存できませんでした。既存の設定は変更していません。");
+                return;
+            }
+
+            StatusMessage = "設定をエクスポートしました。";
+        }
+        finally
+        {
+            isSettingsTransferRunning = false;
+            RaiseCommandStates();
+        }
+    }
+
     /// <summary>選択件数が一件の場合だけ対象行を返却</summary>
     private WatchTargetRowViewModel? GetSingleSelected() =>
         selectedRows.Count == 1 ? selectedRows[0] : null;
+
+    /// <summary>設定移行中ではない通常操作の利用可否を返却</summary>
+    private bool CanUseOperationalCommands() =>
+        isOperational && !isSettingsTransferRunning;
+
+    /// <summary>一覧上の監視対象に実行中チェックが存在するかを返却</summary>
+    private bool HasRunningChecks() =>
+        Rows.Any(row => row.RunningCount > 0);
 
     /// <summary>エラー表示とステータスメッセージを一貫して更新</summary>
     private async Task ShowErrorAsync(string message)
@@ -426,5 +580,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         AddCommand.RaiseCanExecuteChanged();
         EditCommand.RaiseCanExecuteChanged();
         DeleteCommand.RaiseCanExecuteChanged();
+        ImportSettingsCommand.RaiseCanExecuteChanged();
+        ExportSettingsCommand.RaiseCanExecuteChanged();
     }
 }

@@ -26,6 +26,103 @@ public sealed class MainWindowViewModelTests
         Assert.Equal("選択 1件", viewModel.SelectionSummary);
     }
 
+    /// <summary>設定エクスポートで選択した保存先へポータブルJSONを書き込むことを検証</summary>
+    [Fact]
+    public async Task ExportSettingsAsync_WhenPathIsSelected_WritesPortableSettings()
+    {
+        using var context = TestContext.Create();
+        context.Settings.ExportPath = "settings.json";
+        using var viewModel = context.CreateViewModel();
+
+        await viewModel.ExportSettingsCommand.ExecuteAsync(null);
+
+        Assert.Equal("settings.json", context.Settings.LastWrittenPath);
+        Assert.NotNull(context.Settings.LastWrittenContent);
+        Assert.Contains("argus-settings", context.Settings.LastWrittenContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("previousSnapshot", context.Settings.LastWrittenContent, StringComparison.Ordinal);
+        Assert.Contains("設定をエクスポートしました", viewModel.StatusMessage, StringComparison.Ordinal);
+    }
+
+    /// <summary>設定インポートの確認後に一覧を置き換え新規対象を初回取得状態にすることを検証</summary>
+    [Fact]
+    public async Task ImportSettingsAsync_WhenConfirmed_ReplacesRowsAsFirstFetchTargets()
+    {
+        using var context = TestContext.Create();
+        context.Settings.ImportPath = "settings.json";
+        context.Settings.ImportContent = """
+            {
+              "format": "argus-settings",
+              "formatVersion": 1,
+              "targets": [
+                {
+                  "name": "Imported",
+                  "url": "https://example.org/",
+                  "mode": "htmlText",
+                  "isEnabled": true,
+                  "memo": "memo",
+                  "cssSelector": null
+                }
+              ]
+            }
+            """;
+        context.Dialog.ConfirmImport = true;
+        using var viewModel = context.CreateViewModel();
+
+        await viewModel.ImportSettingsCommand.ExecuteAsync(null);
+
+        var row = Assert.Single(viewModel.Rows);
+        Assert.Equal("Imported", row.Name);
+        Assert.Equal(CheckStatus.Unchecked, row.Status);
+        Assert.Equal("設定をインポートしました。", viewModel.StatusMessage);
+    }
+
+    /// <summary>設定インポートをキャンセルした場合に現在の一覧を維持することを検証</summary>
+    [Fact]
+    public async Task ImportSettingsAsync_WhenConfirmationIsDeclined_KeepsRows()
+    {
+        using var context = TestContext.Create();
+        context.Settings.ImportPath = "settings.json";
+        context.Settings.ImportContent = TestContext.CreateImportContent("Imported");
+        context.Dialog.ConfirmImport = false;
+        using var viewModel = context.CreateViewModel();
+
+        await viewModel.ImportSettingsCommand.ExecuteAsync(null);
+
+        var row = Assert.Single(viewModel.Rows);
+        Assert.Equal("Example", row.Name);
+        Assert.Null(context.Settings.LastWrittenContent);
+    }
+
+    /// <summary>不正な設定ファイルをインポートした場合に一覧と保存内容を維持することを検証</summary>
+    [Fact]
+    public async Task ImportSettingsAsync_WhenFileIsInvalid_KeepsRowsAndShowsError()
+    {
+        using var context = TestContext.Create();
+        context.Settings.ImportPath = "settings.json";
+        context.Settings.ImportContent = "{ invalid";
+        using var viewModel = context.CreateViewModel();
+
+        await viewModel.ImportSettingsCommand.ExecuteAsync(null);
+
+        Assert.Equal("Example", Assert.Single(viewModel.Rows).Name);
+        Assert.Contains("設定", context.Dialog.LastErrorMessage, StringComparison.Ordinal);
+    }
+
+    /// <summary>監視対象のチェック中は設定インポート操作を無効にすることを検証</summary>
+    [Fact]
+    public async Task ImportSettingsCommand_WhenCheckIsRunning_IsDisabled()
+    {
+        using var context = TestContext.Create(blockFetch: true);
+        using var viewModel = context.CreateViewModel();
+        viewModel.SetSelection([viewModel.Rows[0]]);
+
+        var check = viewModel.CheckSelectedCommand.ExecuteAsync(null);
+
+        Assert.False(viewModel.ImportSettingsCommand.CanExecute(null));
+        context.ReleaseFetch();
+        await check;
+    }
+
     /// <summary>更新ありの行だけ差分表示コマンドを利用できることを検証</summary>
     [Fact]
     public async Task ShowDiffAsync_WhenUpdatedRowSelected_PassesDiffToDialog()
@@ -208,6 +305,9 @@ public sealed class MainWindowViewModelTests
         /// <summary>編集入力と確認結果を制御するテスト用サービス</summary>
         public StubDialogService Dialog { get; } = new();
 
+        /// <summary>設定ファイルの選択と読み書きを制御するテスト用サービス</summary>
+        public StubSettingsFileService Settings { get; } = new();
+
         /// <summary>実サイトやファイルへ依存しないCore依存を構築</summary>
         private TestContext(bool blockFetch)
         {
@@ -235,9 +335,11 @@ public sealed class MainWindowViewModelTests
                 repository,
                 managementService,
                 coordinator,
+                new SettingsTransferService(),
                 Browser,
                 Manual,
                 Dialog,
+                Settings,
                 new ImmediateDispatcher(),
                 new ApplicationInfo(null, "v0.2.0", true),
                 cancellation,
@@ -245,6 +347,24 @@ public sealed class MainWindowViewModelTests
 
         /// <summary>待機中のHTTP取得をテストから完了可能にする操作</summary>
         public void ReleaseFetch() => fetcher.Release();
+
+        /// <summary>テスト用インポート文書を監視対象名だけ差し替えて生成</summary>
+        public static string CreateImportContent(string name) => $$"""
+            {
+              "format": "argus-settings",
+              "formatVersion": 1,
+              "targets": [
+                {
+                  "name": "{{name}}",
+                  "url": "https://example.org/",
+                  "mode": "htmlText",
+                  "isEnabled": true,
+                  "memo": null,
+                  "cssSelector": null
+                }
+              ]
+            }
+            """;
 
         /// <summary>チェック処理とキャンセルトークンをテスト終了時に解放</summary>
         public void Dispose()
@@ -328,6 +448,9 @@ public sealed class MainWindowViewModelTests
         /// <summary>削除確認で返す利用者選択</summary>
         public bool ConfirmDelete { get; set; }
 
+        /// <summary>設定置換確認で返す利用者選択</summary>
+        public bool ConfirmImport { get; set; }
+
         /// <summary>直近に表示を依頼されたエラーメッセージ</summary>
         public string? LastErrorMessage { get; private set; }
 
@@ -356,6 +479,13 @@ public sealed class MainWindowViewModelTests
         public Task<bool> ConfirmDeleteAsync(WatchTarget target, CancellationToken cancellationToken) =>
             Task.FromResult(ConfirmDelete);
 
+        /// <summary>設定置換確認を表示せずテスト指定の結果を返却</summary>
+        public Task<bool> ConfirmImportSettingsAsync(
+            int currentTargetCount,
+            int importedTargetCount,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(ConfirmImport);
+
         /// <summary>テストではエラー画面を表示せず完了</summary>
         public Task ShowErrorAsync(string message, CancellationToken cancellationToken)
         {
@@ -371,6 +501,48 @@ public sealed class MainWindowViewModelTests
         {
             LastDiffTarget = target;
             LastDiff = diff;
+            return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>OSのファイル選択と読み書きを行わず操作結果を記録するテスト境界</summary>
+    private sealed class StubSettingsFileService : ISettingsFileService
+    {
+        /// <summary>テストから指定するインポート元パス</summary>
+        public string? ImportPath { get; set; }
+
+        /// <summary>テストから指定するインポート内容</summary>
+        public string? ImportContent { get; set; }
+
+        /// <summary>テストから指定するエクスポート先パス</summary>
+        public string? ExportPath { get; set; }
+
+        /// <summary>直近の書き込み先</summary>
+        public string? LastWrittenPath { get; private set; }
+
+        /// <summary>直近の書き込み内容</summary>
+        public string? LastWrittenContent { get; private set; }
+
+        /// <summary>インポート元選択をテスト指定値で返却</summary>
+        public Task<string?> PickImportPathAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(ImportPath);
+
+        /// <summary>エクスポート先選択をテスト指定値で返却</summary>
+        public Task<string?> PickExportPathAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(ExportPath);
+
+        /// <summary>テスト指定のインポート内容を返却</summary>
+        public Task<string> ReadAsync(string path, CancellationToken cancellationToken) =>
+            Task.FromResult(ImportContent ?? string.Empty);
+
+        /// <summary>書き込み内容を記録して成功を返却</summary>
+        public Task WriteAsync(
+            string path,
+            string content,
+            CancellationToken cancellationToken)
+        {
+            LastWrittenPath = path;
+            LastWrittenContent = content;
             return Task.CompletedTask;
         }
     }

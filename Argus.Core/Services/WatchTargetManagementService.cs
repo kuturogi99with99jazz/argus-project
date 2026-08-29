@@ -239,4 +239,50 @@ public sealed class WatchTargetManagementService
                 "監視対象を削除できませんでした。変更前のデータを維持しています。");
         }
     }
+
+    /// <summary>インポート済み監視対象を全件検証後に一括置換して永続化</summary>
+    public async Task<WatchTargetChangeResult> ReplaceAllAsync(
+        IReadOnlyList<WatchTarget> targets,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(targets);
+        var nextTargets = targets.ToArray();
+
+        if (repository.GetAll().Any(target => executionState.GetRunningCount(target.Id) > 0))
+        {
+            return WatchTargetChangeResult.Failure(
+                "チェック中は設定をインポートできません。");
+        }
+
+        try
+        {
+            return await repository.CommitAsync(
+                    current =>
+                    {
+                        if (current.Any(target => executionState.GetRunningCount(target.Id) > 0))
+                        {
+                            return new RepositoryUpdate<WatchTargetChangeResult>(
+                                current,
+                                WatchTargetChangeResult.Failure(
+                                    "チェック中は設定をインポートできません。"));
+                        }
+
+                        return new RepositoryUpdate<WatchTargetChangeResult>(
+                            nextTargets,
+                            WatchTargetChangeResult.Success(null));
+                    },
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or TargetStoreException)
+        {
+            return WatchTargetChangeResult.Failure(
+                "設定を保存できませんでした。変更前のデータを維持しています。");
+        }
+    }
 }

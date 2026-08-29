@@ -124,6 +124,12 @@
         <Button Margin="0,0,20,0" Command="{Binding OpenBrowserCommand}">
           <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconExternal}" /><TextBlock Text="ブラウザで開く" /></StackPanel>
         </Button>
+        <Button Classes="primary" Margin="0,0,8,0" Command="{Binding ImportSettingsCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconImport}" /><TextBlock Text="設定をインポート" /></StackPanel>
+        </Button>
+        <Button Classes="primary" Margin="0,0,20,0" Command="{Binding ExportSettingsCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconExport}" /><TextBlock Text="設定をエクスポート" /></StackPanel>
+        </Button>
         <Button Classes="primary" Margin="0,0,20,0" Command="{Binding ShowDiffCommand}">
           <StackPanel Orientation="Horizontal" Spacing="7"><PathIcon Width="16" Height="16" Data="{StaticResource IconDiff}" /><TextBlock Text="差分を表示" /></StackPanel>
         </Button>

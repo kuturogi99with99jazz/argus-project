@@ -34,6 +34,8 @@
           <SolidColorBrush x:Key="AppDiffRemovedForegroundBrush" Color="#991B1B" />
           <SolidColorBrush x:Key="AppDiffChangedBackgroundBrush" Color="#FEF3C7" />
           <SolidColorBrush x:Key="AppDiffChangedForegroundBrush" Color="#92400E" />
+          <SolidColorBrush x:Key="AppDiffInlineChangedBackgroundBrush" Color="#FDE68A" />
+          <SolidColorBrush x:Key="AppDiffInlineChangedForegroundBrush" Color="#78350F" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="AppWindowBackgroundBrush" Color="#0E1726" />
@@ -64,6 +66,8 @@
           <SolidColorBrush x:Key="AppDiffRemovedForegroundBrush" Color="#FEE2E2" />
           <SolidColorBrush x:Key="AppDiffChangedBackgroundBrush" Color="#78350F" />
           <SolidColorBrush x:Key="AppDiffChangedForegroundBrush" Color="#FEF3C7" />
+          <SolidColorBrush x:Key="AppDiffInlineChangedBackgroundBrush" Color="#A16207" />
+          <SolidColorBrush x:Key="AppDiffInlineChangedForegroundBrush" Color="#FEF3C7" />
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
       <StreamGeometry x:Key="IconArgus">M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z</StreamGeometry>
@@ -77,6 +81,8 @@
       <StreamGeometry x:Key="IconTheme">M9.37 5.51A7 7 0 0 0 18.49 14.63 7 7 0 1 1 9.37 5.51z</StreamGeometry>
       <StreamGeometry x:Key="IconManual">M21 4H7C5.9 4 5 4.9 5 6v13c0 1.1.9 2 2 2h14V4zm-2 15H7V6h12v13zM3 6H1v13c0 1.1.9 2 2 2V6zm6 1h8v2H9V7zm0 4h8v2H9v-2zm0 4h5v2H9v-2z</StreamGeometry>
       <StreamGeometry x:Key="IconDiff">M4 5h16v2H4V5zm0 6h7v2H4v-2zm0 6h16v2H4v-2zm11-7 5 3-5 3v-2h-3v-2h3v-2z</StreamGeometry>
+      <StreamGeometry x:Key="IconImport">M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3h-2v1H7v-1H5z</StreamGeometry>
+      <StreamGeometry x:Key="IconExport">M12 21V10m0 0 4 4m-4-4-4 4M5 7V4h14v3h-2V6H7v1H5z</StreamGeometry>
       <StreamGeometry x:Key="IconAi">M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zM10 8l1.5 3.5L15 13l-3.5 1.5L10 18l-1.5-3.5L5 13l3.5-1.5L10 8zm9 7l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z</StreamGeometry>
     </ResourceDictionary>
   </Application.Resources>

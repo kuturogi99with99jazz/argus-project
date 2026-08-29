@@ -48,6 +48,23 @@ public sealed class DialogService(
         return await window.ShowDialog<bool>(GetOwner());
     }
 
+    /// <summary>置換対象件数とインポート件数を明示して設定置換の確認を取得</summary>
+    public async Task<bool> ConfirmImportSettingsAsync(
+        int currentTargetCount,
+        int importedTargetCount,
+        CancellationToken cancellationToken)
+    {
+        var window = new MessageDialogWindow(
+            "設定のインポート",
+            $"現在の監視対象 {currentTargetCount}件を削除して、読み込んだ " +
+            $"{importedTargetCount}件の設定へ置き換えますか？\n" +
+            "前回のチェックデータは引き継がれません。",
+            true,
+            "置き換え");
+        using var registration = cancellationToken.Register(() => window.Close(false));
+        return await window.ShowDialog<bool>(GetOwner());
+    }
+
     /// <summary>操作エラーをプラットフォーム非依存のモーダル画面で通知</summary>
     public async Task ShowErrorAsync(string message, CancellationToken cancellationToken)
     {

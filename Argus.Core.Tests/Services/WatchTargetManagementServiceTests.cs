@@ -273,6 +273,64 @@ public sealed class WatchTargetManagementServiceTests
         Assert.Equal(target, repository.Find(target.Id));
     }
 
+    /// <summary>インポートした監視対象を一括置換しスナップショットなしで保存することを検証</summary>
+    [Fact]
+    public async Task ReplaceAllAsync_WhenTargetsAreValid_ReplacesAndPersistsTargets()
+    {
+        var original = CreateTarget();
+        var imported = CreateTarget() with
+        {
+            Id = Guid.NewGuid(),
+            Name = "Imported",
+            PreviousSnapshot = null
+        };
+        var store = new MemoryStore();
+        var repository = new WatchTargetRepository(
+            store,
+            new TargetStoreDocument(TargetStoreDocument.CurrentSchemaVersion, [original]));
+        var service = new WatchTargetManagementService(repository, new IdleExecutionState());
+
+        var result = await service.ReplaceAllAsync([imported], CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal([imported], repository.GetAll());
+        Assert.Equal([imported], store.LastSaved.Targets);
+    }
+
+    /// <summary>監視対象のチェック中は設定の一括置換を拒否することを検証</summary>
+    [Fact]
+    public async Task ReplaceAllAsync_WhenExistingTargetIsChecking_KeepsCurrentTargets()
+    {
+        var original = CreateTarget();
+        var imported = CreateTarget() with { Id = Guid.NewGuid(), Name = "Imported" };
+        var repository = CreateRepository(original);
+        var service = new WatchTargetManagementService(
+            repository,
+            new BusyExecutionState(original.Id));
+
+        var result = await service.ReplaceAllAsync([imported], CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal([original], repository.GetAll());
+    }
+
+    /// <summary>設定の保存に失敗した場合は一括置換前の監視対象を維持することを検証</summary>
+    [Fact]
+    public async Task ReplaceAllAsync_WhenSaveFails_KeepsCurrentTargets()
+    {
+        var original = CreateTarget();
+        var imported = CreateTarget() with { Id = Guid.NewGuid(), Name = "Imported" };
+        var repository = new WatchTargetRepository(
+            new ThrowingStore(),
+            new TargetStoreDocument(TargetStoreDocument.CurrentSchemaVersion, [original]));
+        var service = new WatchTargetManagementService(repository, new IdleExecutionState());
+
+        var result = await service.ReplaceAllAsync([imported], CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal([original], repository.GetAll());
+    }
+
     /// <summary>各テストで共通する前提データを一貫して構築するための補助処理</summary>
     private static WatchTargetRepository CreateRepository(WatchTarget target) =>
         new(

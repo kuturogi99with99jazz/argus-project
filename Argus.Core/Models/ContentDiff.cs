@@ -8,11 +8,16 @@ public enum ChangeKind
     Changed
 }
 
+/// <summary>差分行内の変更有無を保った表示単位。</summary>
+public sealed record ContentDiffSegment(string Text, bool IsChanged);
+
 /// <summary>前回と今回の比較対象における一つの行差分</summary>
 public sealed record ContentDiffEntry(
     ChangeKind Kind,
     string? PreviousText,
-    string? CurrentText);
+    string? CurrentText,
+    IReadOnlyList<ContentDiffSegment>? PreviousSegments = null,
+    IReadOnlyList<ContentDiffSegment>? CurrentSegments = null);
 
 /// <summary>UIへ渡す追加・削除・変更の差分結果</summary>
 public sealed record ContentDiff

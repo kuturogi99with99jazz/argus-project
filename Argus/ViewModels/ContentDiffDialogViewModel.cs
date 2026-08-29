@@ -43,6 +43,14 @@ public sealed class ContentDiffEntryViewModel
         IsAdded = entry.Kind == ChangeKind.Added;
         IsRemoved = entry.Kind == ChangeKind.Removed;
         IsChanged = entry.Kind == ChangeKind.Changed;
+        PreviousSegments = CreateSegments(
+            entry.PreviousSegments,
+            entry.PreviousText,
+            entry.Kind is ChangeKind.Removed or ChangeKind.Changed);
+        CurrentSegments = CreateSegments(
+            entry.CurrentSegments,
+            entry.CurrentText,
+            entry.Kind is ChangeKind.Added or ChangeKind.Changed);
     }
 
     /// <summary>差分が追加種別かどうか</summary>
@@ -59,4 +67,35 @@ public sealed class ContentDiffEntryViewModel
 
     /// <summary>今回比較対象の表示値</summary>
     public string CurrentText { get; }
+
+    /// <summary>前回比較対象を変更有無付きで表示するセグメント一覧</summary>
+    public IReadOnlyList<ContentDiffSegmentViewModel> PreviousSegments { get; }
+
+    /// <summary>今回比較対象を変更有無付きで表示するセグメント一覧</summary>
+    public IReadOnlyList<ContentDiffSegmentViewModel> CurrentSegments { get; }
+
+    /// <summary>Coreのセグメントまたは旧形式の行文字列を表示用セグメントへ変換。</summary>
+    private static IReadOnlyList<ContentDiffSegmentViewModel> CreateSegments(
+        IReadOnlyList<ContentDiffSegment>? segments,
+        string? text,
+        bool fallbackIsChanged)
+    {
+        if (segments is not null)
+        {
+            return segments
+                .Select(segment => new ContentDiffSegmentViewModel(segment.Text, segment.IsChanged))
+                .ToArray();
+        }
+
+        return text is null
+            ? [new ContentDiffSegmentViewModel("（なし）", false)]
+            : [new ContentDiffSegmentViewModel(text, fallbackIsChanged)];
+    }
+}
+
+/// <summary>差分ダイアログで文字列片の変更有無を保持するViewModel。</summary>
+public sealed record ContentDiffSegmentViewModel(string Text, bool IsChanged)
+{
+    /// <summary>文字列片が変更されていないかどうか</summary>
+    public bool IsUnchanged => !IsChanged;
 }

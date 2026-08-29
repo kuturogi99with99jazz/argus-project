@@ -14,13 +14,19 @@ public sealed partial class MessageDialogWindow : Window
     }
 
     /// <summary>メッセージと確認種別に応じてボタン構成を初期化</summary>
-    public MessageDialogWindow(string title, string message, bool isConfirmation)
+    public MessageDialogWindow(
+        string title,
+        string message,
+        bool isConfirmation,
+        string confirmationText = "削除")
     {
         AvaloniaXamlLoader.Load(this);
         Title = title;
         this.FindControl<TextBlock>("MessageText")!.Text = message;
         this.FindControl<Button>("CancelButton")!.IsVisible = isConfirmation;
-        this.FindControl<Button>("AcceptButton")!.Content = isConfirmation ? "削除" : "OK";
+        this.FindControl<Button>("AcceptButton")!.Content = isConfirmation
+            ? confirmationText
+            : "OK";
     }
 
     /// <summary>確認操作を肯定結果としてモーダル呼び出し元へ返却</summary>

@@ -25,6 +25,7 @@
       <StackPanel Grid.Row="1" Spacing="3">
         <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="{Binding ModeText}" />
         <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="{Binding Summary}" />
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="変更部分は太字・下線・背景色で強調しています。" TextWrapping="Wrap" />
       </StackPanel>
       <Border Grid.Row="2"
               Padding="8"
@@ -76,22 +77,76 @@
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource AppMutedTextBrush}"
                                Text="前回" />
-                    <TextBlock Grid.Column="2"
-                               MaxWidth="760"
-                               Foreground="{DynamicResource AppTextBrush}"
-                               Text="{Binding PreviousText}"
-                               TextWrapping="Wrap" />
+                    <ItemsControl Grid.Column="2"
+                                  MaxWidth="760"
+                                  ItemsSource="{Binding PreviousSegments}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ContentDiffSegmentViewModel">
+                          <Grid>
+                            <TextBlock MaxWidth="760"
+                                       Foreground="{DynamicResource AppTextBrush}"
+                                       IsVisible="{Binding IsUnchanged}"
+                                       Text="{Binding Text}"
+                                       TextWrapping="Wrap" />
+                            <Border MaxWidth="760"
+                                    Padding="2,0"
+                                    Background="{DynamicResource AppDiffInlineChangedBackgroundBrush}"
+                                    BorderBrush="{DynamicResource AppDiffInlineChangedForegroundBrush}"
+                                    BorderThickness="0,0,0,1"
+                                    IsVisible="{Binding IsChanged}">
+                              <TextBlock MaxWidth="760"
+                                         FontWeight="SemiBold"
+                                         Foreground="{DynamicResource AppDiffInlineChangedForegroundBrush}"
+                                         Text="{Binding Text}"
+                                         TextWrapping="Wrap" />
+                            </Border>
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <TextBlock Grid.Row="1"
                                Grid.Column="1"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource AppMutedTextBrush}"
                                Text="今回" />
-                    <TextBlock Grid.Row="1"
-                               Grid.Column="2"
-                               MaxWidth="760"
-                               Foreground="{DynamicResource AppTextBrush}"
-                               Text="{Binding CurrentText}"
-                               TextWrapping="Wrap" />
+                    <ItemsControl Grid.Row="1"
+                                  Grid.Column="2"
+                                  MaxWidth="760"
+                                  ItemsSource="{Binding CurrentSegments}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ContentDiffSegmentViewModel">
+                          <Grid>
+                            <TextBlock MaxWidth="760"
+                                       Foreground="{DynamicResource AppTextBrush}"
+                                       IsVisible="{Binding IsUnchanged}"
+                                       Text="{Binding Text}"
+                                       TextWrapping="Wrap" />
+                            <Border MaxWidth="760"
+                                    Padding="2,0"
+                                    Background="{DynamicResource AppDiffInlineChangedBackgroundBrush}"
+                                    BorderBrush="{DynamicResource AppDiffInlineChangedForegroundBrush}"
+                                    BorderThickness="0,0,0,1"
+                                    IsVisible="{Binding IsChanged}">
+                              <TextBlock MaxWidth="760"
+                                         FontWeight="SemiBold"
+                                         Foreground="{DynamicResource AppDiffInlineChangedForegroundBrush}"
+                                         Text="{Binding Text}"
+                                         TextWrapping="Wrap" />
+                            </Border>
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                   </Grid>
                 </Border>
               </DataTemplate>

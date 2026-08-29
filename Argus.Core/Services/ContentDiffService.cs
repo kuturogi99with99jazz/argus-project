@@ -1,3 +1,5 @@
+using System.Globalization;
+
 using Argus.Core.Models;
 
 namespace Argus.Core.Services;
@@ -15,18 +17,24 @@ public sealed class ContentDiffService : IContentDiffService
 
         var previousLines = SplitLines(previousContent);
         var currentLines = SplitLines(currentContent);
-        var lcsTableCells = (long)(previousLines.Length + 1) * (currentLines.Length + 1);
+        EnsureLcsTableWithinLimit(previousLines.Length, currentLines.Length);
+
+        var lcs = BuildLcsTable(previousLines, currentLines);
+        var operations = BuildOperations(previousLines, currentLines, lcs);
+        var entries = BuildEntries(operations);
+        return new ContentDiff(AttachInlineSegments(entries));
+    }
+
+    /// <summary>LCS表の上限を確認し、過大な入力を保存保護可能なエラーへ変換。</summary>
+    private static void EnsureLcsTableWithinLimit(int previousCount, int currentCount)
+    {
+        var lcsTableCells = (long)(previousCount + 1) * (currentCount + 1);
         if (lcsTableCells > MaximumLcsTableCells)
         {
             throw new ContentDiffException(
                 "差分対象が大きすぎます。",
                 new InvalidOperationException("差分計算用の表が上限を超えました。"));
         }
-
-        var lcs = BuildLcsTable(previousLines, currentLines);
-        var operations = BuildOperations(previousLines, currentLines, lcs);
-        var entries = BuildEntries(operations);
-        return new ContentDiff(entries);
     }
 
     /// <summary>改行コード以外の文字列を保持したまま比較単位を分割</summary>
@@ -123,6 +131,105 @@ public sealed class ContentDiffService : IContentDiffService
         AppendUnmatchedEntries(unmatched, entries);
         return entries;
     }
+
+    /// <summary>行差分へ前回・今回の文字列内セグメントを付与。</summary>
+    private static IReadOnlyList<ContentDiffEntry> AttachInlineSegments(
+        IReadOnlyList<ContentDiffEntry> entries)
+    {
+        return entries
+            .Select(entry => entry.Kind switch
+            {
+                ChangeKind.Added => entry with
+                {
+                    CurrentSegments = CreateWholeChangedSegment(entry.CurrentText)
+                },
+                ChangeKind.Removed => entry with
+                {
+                    PreviousSegments = CreateWholeChangedSegment(entry.PreviousText)
+                },
+                ChangeKind.Changed => AddInlineSegments(entry),
+                _ => entry
+            })
+            .ToArray();
+    }
+
+    /// <summary>変更行をUnicode文字要素単位のLCSで前後セグメントへ変換。</summary>
+    private static ContentDiffEntry AddInlineSegments(ContentDiffEntry entry)
+    {
+        if (entry.PreviousText is null || entry.CurrentText is null)
+        {
+            return entry;
+        }
+
+        var previousElements = SplitTextElements(entry.PreviousText);
+        var currentElements = SplitTextElements(entry.CurrentText);
+        EnsureLcsTableWithinLimit(previousElements.Length, currentElements.Length);
+
+        var lcs = BuildLcsTable(previousElements, currentElements);
+        var operations = BuildOperations(previousElements, currentElements, lcs);
+        var previousSegments = new List<ContentDiffSegment>();
+        var currentSegments = new List<ContentDiffSegment>();
+
+        foreach (var operation in operations)
+        {
+            switch (operation.Kind)
+            {
+                case DiffOperationKind.Match:
+                    AppendSegment(previousSegments, operation.Text, false);
+                    AppendSegment(currentSegments, operation.Text, false);
+                    break;
+                case DiffOperationKind.Added:
+                    AppendSegment(currentSegments, operation.Text, true);
+                    break;
+                case DiffOperationKind.Removed:
+                    AppendSegment(previousSegments, operation.Text, true);
+                    break;
+            }
+        }
+
+        return entry with
+        {
+            PreviousSegments = previousSegments,
+            CurrentSegments = currentSegments
+        };
+    }
+
+    /// <summary>Unicode文字要素を結合文字やサロゲートペアを壊さず列挙。</summary>
+    private static string[] SplitTextElements(string content)
+    {
+        var elements = new List<string>();
+        var enumerator = StringInfo.GetTextElementEnumerator(content);
+        while (enumerator.MoveNext())
+        {
+            elements.Add((string)enumerator.Current!);
+        }
+
+        return elements.ToArray();
+    }
+
+    /// <summary>隣接する同種セグメントをまとめて元文字列を保持。</summary>
+    private static void AppendSegment(
+        List<ContentDiffSegment> segments,
+        string text,
+        bool isChanged)
+    {
+        if (segments.Count > 0 && segments[^1].IsChanged == isChanged)
+        {
+            segments[^1] = segments[^1] with
+            {
+                Text = segments[^1].Text + text
+            };
+            return;
+        }
+
+        segments.Add(new ContentDiffSegment(text, isChanged));
+    }
+
+    /// <summary>追加・削除された実値全体を一つの変更セグメントへ変換。</summary>
+    private static IReadOnlyList<ContentDiffSegment> CreateWholeChangedSegment(string? text) =>
+        text is null
+            ? []
+            : [new ContentDiffSegment(text, true)];
 
     /// <summary>隣接する未一致行を旧値と新値の変更組または単独差分へ変換</summary>
     private static void AppendUnmatchedEntries(

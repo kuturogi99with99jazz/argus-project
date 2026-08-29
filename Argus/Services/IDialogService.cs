@@ -15,6 +15,12 @@ public interface IDialogService
     /// <summary>保存済みチェック情報を含む削除について利用者の確認を取得</summary>
     Task<bool> ConfirmDeleteAsync(WatchTarget target, CancellationToken cancellationToken);
 
+    /// <summary>現在の監視対象をインポート内容へ置き換える確認を取得</summary>
+    Task<bool> ConfirmImportSettingsAsync(
+        int currentTargetCount,
+        int importedTargetCount,
+        CancellationToken cancellationToken);
+
     /// <summary>操作を継続できないエラーを利用者へ通知</summary>
     Task ShowErrorAsync(string message, CancellationToken cancellationToken);
 
