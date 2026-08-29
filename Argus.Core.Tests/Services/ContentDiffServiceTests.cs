@@ -96,4 +96,15 @@ public sealed class ContentDiffServiceTests
         Assert.Null(addedEntry.PreviousText);
         Assert.Equal("content", addedEntry.CurrentText);
     }
+
+    /// <summary>差分表が過大になる入力を明示的な差分生成エラーとして拒否することを検証</summary>
+    [Fact]
+    public void Generate_WhenLcsTableWouldBeTooLarge_ThrowsContentDiffException()
+    {
+        var previous = string.Join('\n', Enumerable.Repeat("previous", 2_000));
+        var current = string.Join('\n', Enumerable.Repeat("current", 2_000));
+
+        Assert.Throws<ContentDiffException>(
+            () => new ContentDiffService().Generate(previous, current));
+    }
 }

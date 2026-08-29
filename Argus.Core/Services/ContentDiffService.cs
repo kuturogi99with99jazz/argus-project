@@ -5,6 +5,8 @@ namespace Argus.Core.Services;
 /// <summary>LCSを使って比較対象の追加・削除・変更を抽出する実装</summary>
 public sealed class ContentDiffService : IContentDiffService
 {
+    private const long MaximumLcsTableCells = 4_000_000;
+
     /// <summary>比較対象を改変せず行単位の差分結果へ変換</summary>
     public ContentDiff Generate(string previousContent, string currentContent)
     {
@@ -13,6 +15,14 @@ public sealed class ContentDiffService : IContentDiffService
 
         var previousLines = SplitLines(previousContent);
         var currentLines = SplitLines(currentContent);
+        var lcsTableCells = (long)(previousLines.Length + 1) * (currentLines.Length + 1);
+        if (lcsTableCells > MaximumLcsTableCells)
+        {
+            throw new ContentDiffException(
+                "差分対象が大きすぎます。",
+                new InvalidOperationException("差分計算用の表が上限を超えました。"));
+        }
+
         var lcs = BuildLcsTable(previousLines, currentLines);
         var operations = BuildOperations(previousLines, currentLines, lcs);
         var entries = BuildEntries(operations);

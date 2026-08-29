@@ -72,7 +72,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             _ => isOperational && selectedRows.Count == 1);
         ShowDiffCommand = new AsyncCommand(
             (_, _) => ShowDiffAsync(),
-            _ => isOperational && GetSingleSelected() is { Status: CheckStatus.Updated },
+            _ => isOperational && GetSingleSelected() is
+            {
+                Status: CheckStatus.Updated,
+                RunningCount: 0
+            },
             ReportUnexpectedError,
             applicationCancellation.Token);
         OpenManualCommand = new RelayCommand(_ => OpenManual());
@@ -291,7 +295,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private async Task ShowDiffAsync()
     {
         var row = GetSingleSelected();
-        if (row is null || row.Status != CheckStatus.Updated)
+        if (row is null ||
+            row.Status != CheckStatus.Updated ||
+            row.RunningCount > 0)
         {
             return;
         }

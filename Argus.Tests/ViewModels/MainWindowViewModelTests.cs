@@ -64,6 +64,24 @@ public sealed class MainWindowViewModelTests
         Assert.Null(context.Dialog.LastDiff);
     }
 
+    /// <summary>更新ありの対象を再チェックしている間は古い差分を表示できないことを検証</summary>
+    [Fact]
+    public void ShowDiffCommand_WhenUpdatedRowIsChecking_IsDisabled()
+    {
+        using var context = TestContext.Create();
+        using var viewModel = context.CreateViewModel();
+        var row = viewModel.Rows[0];
+        var diff = new ContentDiff([
+            new ContentDiffEntry(ChangeKind.Changed, "old", "new")]);
+        row.ApplyCheckResult(new CheckResult(
+            Guid.NewGuid(), row.TargetId, CheckStatus.Updated,
+            DateTimeOffset.UtcNow, "hash", null, diff));
+        row.SetRunningCount(1);
+        viewModel.SetSelection([row]);
+
+        Assert.False(viewModel.ShowDiffCommand.CanExecute(null));
+    }
+
     /// <summary>Coreの実行開始と完了イベントが一覧行と集計へ反映されることを検証</summary>
     [Fact]
     public async Task CheckSelectedAsync_WhenCheckRuns_UpdatesRunningAndResultState()
