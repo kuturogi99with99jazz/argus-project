@@ -12,6 +12,6 @@ public interface ISettingsFileService
     /// <summary>選択済みの設定ファイルをUTF-8文字列として読み込む境界</summary>
     Task<string> ReadAsync(string path, CancellationToken cancellationToken);
 
-    /// <summary>設定JSONをUTF-8 BOMなしで選択済みファイルへ保存する境界</summary>
+    /// <summary>設定JSONをUTF-8 BOMなしで安全に選択済みファイルへ保存する境界</summary>
     Task WriteAsync(string path, string content, CancellationToken cancellationToken);
 }

@@ -27,6 +27,22 @@ public sealed class SettingsFileDialogServiceTests : IDisposable
         Assert.Equal("{\"名前\":\"監視対象\"}", content);
     }
 
+    /// <summary>運用中の設定ファイルをポータブル設定で上書きせず既存内容を保持することを検証</summary>
+    [Fact]
+    public async Task WriteAsync_WhenOperationalSettingsPathIsSelected_RejectsWithoutChangingFile()
+    {
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "targets.json");
+        await File.WriteAllTextAsync(path, "operational settings");
+        var service = new SettingsFileDialogService(() => null, path);
+
+        var exception = await Assert.ThrowsAsync<SettingsFileException>(
+            () => service.WriteAsync(path, "portable settings", CancellationToken.None));
+
+        Assert.Contains("運用中", exception.Message, StringComparison.Ordinal);
+        Assert.Equal("operational settings", await File.ReadAllTextAsync(path));
+    }
+
     /// <summary>各テストの一時ファイルを終了時に削除</summary>
     public void Dispose()
     {

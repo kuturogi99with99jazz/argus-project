@@ -530,6 +530,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 throw;
             }
+            catch (SettingsFileException exception)
+            {
+                await ShowErrorAsync(exception.Message);
+                return;
+            }
             catch (Exception exception) when (
                 exception is IOException or UnauthorizedAccessException)
             {
