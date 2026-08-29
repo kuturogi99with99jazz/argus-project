@@ -3,16 +3,19 @@ using Argus.Core.Models;
 namespace Argus.Core.Services;
 
 /// <summary>取得・正規化・ハッシュ化の試行結果</summary>
-public sealed record CheckAttempt(string? ContentHash, string? ErrorMessage)
+public sealed record CheckAttempt(
+    string? ContentHash,
+    string? ErrorMessage,
+    string? ComparisonContent = null)
 {
     /// <summary>正常なハッシュが得られたかを内容値から一貫して判定</summary>
     public bool IsSuccess => ContentHash is not null;
     /// <summary>成功時の戻り値生成を呼び出し側で統一するためのファクトリ</summary>
-    public static CheckAttempt Success(string contentHash) =>
-        new(contentHash, null);
+    public static CheckAttempt Success(string contentHash, string comparisonContent) =>
+        new(contentHash, null, comparisonContent);
     /// <summary>失敗情報の生成を呼び出し側で統一するためのファクトリ</summary>
     public static CheckAttempt Failure(string errorMessage) =>
-        new(null, errorMessage);
+        new(null, errorMessage, null);
 }
 
 
@@ -50,7 +53,9 @@ public sealed class WatchCheckService
                 .FetchAsync(target.Url, cancellationToken)
                 .ConfigureAwait(false);
             var comparisonContent = contentExtractor.Extract(target, html);
-            return CheckAttempt.Success(hashService.Compute(comparisonContent));
+            return CheckAttempt.Success(
+                hashService.Compute(comparisonContent),
+                comparisonContent);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

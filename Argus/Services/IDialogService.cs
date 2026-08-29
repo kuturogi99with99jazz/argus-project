@@ -17,4 +17,10 @@ public interface IDialogService
 
     /// <summary>操作を継続できないエラーを利用者へ通知</summary>
     Task ShowErrorAsync(string message, CancellationToken cancellationToken);
+
+    /// <summary>更新あり結果の差分をモーダル画面で利用者へ表示</summary>
+    Task ShowContentDiffAsync(
+        WatchTarget target,
+        ContentDiff diff,
+        CancellationToken cancellationToken);
 }

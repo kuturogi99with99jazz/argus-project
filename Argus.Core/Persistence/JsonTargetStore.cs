@@ -164,7 +164,8 @@ public sealed class JsonTargetStore : ITargetStore
 
                 snapshot = new WatchSnapshot(
                     hash.ToLowerInvariant(),
-                    targetDto.PreviousSnapshot.CheckedAtUtc.ToUniversalTime());
+                    targetDto.PreviousSnapshot.CheckedAtUtc.ToUniversalTime(),
+                    targetDto.PreviousSnapshot.ComparisonContent);
             }
 
             var result = WatchTargetValidator.Create(targetDto.Id, input, snapshot);
@@ -202,7 +203,8 @@ public sealed class JsonTargetStore : ITargetStore
                     : new WatchSnapshotDto
                     {
                         ContentHash = target.PreviousSnapshot.ContentHash,
-                        CheckedAtUtc = target.PreviousSnapshot.CheckedAtUtc.ToUniversalTime()
+                        CheckedAtUtc = target.PreviousSnapshot.CheckedAtUtc.ToUniversalTime(),
+                        ComparisonContent = target.PreviousSnapshot.ComparisonContent
                     }
             }).ToList()
         };
@@ -289,5 +291,7 @@ public sealed class JsonTargetStore : ITargetStore
         public string? ContentHash { get; set; }
         /// <summary>CheckedAtUtcをJSON契約とドメインモデル間で受け渡すための値</summary>
         public DateTimeOffset CheckedAtUtc { get; set; }
+        /// <summary>ComparisonContentをJSON契約とドメインモデル間で受け渡すための値</summary>
+        public string? ComparisonContent { get; set; }
     }
 }

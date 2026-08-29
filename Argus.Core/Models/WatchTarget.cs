@@ -3,7 +3,8 @@ namespace Argus.Core.Models;
 /// <summary>監視対象について最後に正常取得した内容のスナップショット</summary>
 public sealed record WatchSnapshot(
     string ContentHash,
-    DateTimeOffset CheckedAtUtc);
+    DateTimeOffset CheckedAtUtc,
+    string? ComparisonContent = null);
 
 /// <summary>ユーザーが登録したWebページと確認状態</summary>
 public sealed record WatchTarget(

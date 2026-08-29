@@ -70,6 +70,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             applicationCancellation.Token);
         OpenBrowserCommand = new RelayCommand(_ => OpenBrowser(),
             _ => isOperational && selectedRows.Count == 1);
+        ShowDiffCommand = new AsyncCommand(
+            (_, _) => ShowDiffAsync(),
+            _ => isOperational && GetSingleSelected() is { Status: CheckStatus.Updated },
+            ReportUnexpectedError,
+            applicationCancellation.Token);
         OpenManualCommand = new RelayCommand(_ => OpenManual());
         AddCommand = new AsyncCommand(
             (_, _) => AddAsync(),
@@ -103,6 +108,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     /// <summary>単一選択した監視対象を既定ブラウザで開くコマンド</summary>
     public RelayCommand OpenBrowserCommand { get; }
+
+    /// <summary>単一選択した更新あり監視対象の差分を表示するコマンド</summary>
+    public AsyncCommand ShowDiffCommand { get; }
 
     /// <summary>選択状態やデータ読込結果に依存せず正式ユーザーマニュアルを開くコマンド</summary>
     public RelayCommand OpenManualCommand { get; }
@@ -214,6 +222,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             StatusMessage = eventArgs.Result.Status == CheckStatus.Error
                 ? $"{targetName}: {eventArgs.Result.ErrorMessage}"
                 : $"{targetName} のチェックが完了しました。";
+            RaiseCommandStates();
         });
 
     /// <summary>Coreリポジトリから一覧を再構築し選択と集計を整合</summary>
@@ -276,6 +285,37 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         {
             _ = ShowErrorAsync(result.ErrorMessage ?? "ブラウザを開けませんでした。");
         }
+    }
+
+    /// <summary>更新あり結果の差分を検証してダイアログサービスへ委譲</summary>
+    private async Task ShowDiffAsync()
+    {
+        var row = GetSingleSelected();
+        if (row is null || row.Status != CheckStatus.Updated)
+        {
+            return;
+        }
+
+        var target = repository.Find(row.TargetId);
+        if (target is null)
+        {
+            await ShowErrorAsync("差分表示対象が見つかりません。");
+            return;
+        }
+
+        if (row.Diff is null)
+        {
+            await ShowErrorAsync(
+                "既存の保存データに比較内容がないため、今回の差分を表示できません。" +
+                "今回の正常チェックで比較内容を保存したため、次回以降の更新から表示できます。");
+            return;
+        }
+
+        await dialogService.ShowContentDiffAsync(
+            target,
+            row.Diff,
+            applicationCancellation.Token);
+        StatusMessage = $"{target.Name} の差分を表示しました。";
     }
 
     /// <summary>埋め込みマニュアルの展開と既定ブラウザ起動をUIサービスへ委譲</summary>
@@ -376,6 +416,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         CheckAllCommand.RaiseCanExecuteChanged();
         CheckSelectedCommand.RaiseCanExecuteChanged();
         OpenBrowserCommand.RaiseCanExecuteChanged();
+        ShowDiffCommand.RaiseCanExecuteChanged();
         AddCommand.RaiseCanExecuteChanged();
         EditCommand.RaiseCanExecuteChanged();
         DeleteCommand.RaiseCanExecuteChanged();

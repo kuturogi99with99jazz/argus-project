@@ -30,6 +30,7 @@ public sealed class CheckCoordinator : ICheckExecutionState, IDisposable
     private const int MaximumConcurrentFetches = 4;
     private readonly WatchTargetRepository repository;
     private readonly WatchCheckService checkService;
+    private readonly IContentDiffService contentDiffService;
     private readonly TimeProvider timeProvider;
     private readonly SemaphoreSlim fetchSemaphore =
         new(MaximumConcurrentFetches, MaximumConcurrentFetches);
@@ -39,11 +40,13 @@ public sealed class CheckCoordinator : ICheckExecutionState, IDisposable
     public CheckCoordinator(
         WatchTargetRepository repository,
         WatchCheckService checkService,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        IContentDiffService? contentDiffService = null)
     {
         this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.checkService = checkService ?? throw new ArgumentNullException(nameof(checkService));
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.contentDiffService = contentDiffService ?? new ContentDiffService();
     }
 
     public event EventHandler<CheckExecutionChangedEventArgs>? ExecutionChanged;
@@ -139,13 +142,21 @@ public sealed class CheckCoordinator : ICheckExecutionState, IDisposable
                                 current,
                                 requestedTarget.Id,
                                 operationId,
-                                attempt.ContentHash!),
+                                attempt.ContentHash!,
+                                attempt.ComparisonContent!),
                             cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
                     throw;
+                }
+                catch (ContentDiffException)
+                {
+                    result = CreateErrorResult(
+                        operationId,
+                        requestedTarget.Id,
+                        "差分を生成できませんでした。");
                 }
                 catch (Exception exception) when (
                     exception is IOException or
@@ -188,7 +199,8 @@ public sealed class CheckCoordinator : ICheckExecutionState, IDisposable
         IReadOnlyList<WatchTarget> current,
         Guid targetId,
         Guid operationId,
-        string contentHash)
+        string contentHash,
+        string comparisonContent)
     {
         var target = current.FirstOrDefault(item => item.Id == targetId);
         if (target is null)
@@ -213,9 +225,34 @@ public sealed class CheckCoordinator : ICheckExecutionState, IDisposable
             _ => CheckStatus.Updated
         };
 
+        ContentDiff? diff = null;
+        if (status == CheckStatus.Updated &&
+            target.PreviousSnapshot?.ComparisonContent is { } previousComparisonContent)
+        {
+            try
+            {
+                diff = contentDiffService.Generate(
+                    previousComparisonContent,
+                    comparisonContent);
+            }
+            catch (ContentDiffException)
+            {
+                throw;
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                throw new ContentDiffException(
+                    "差分を生成できませんでした。",
+                    exception);
+            }
+        }
+
         var changedTarget = target with
         {
-            PreviousSnapshot = new WatchSnapshot(contentHash, completedAt)
+            PreviousSnapshot = new WatchSnapshot(
+                contentHash,
+                completedAt,
+                comparisonContent)
         };
         var changedTargets = current
             .Select(item => item.Id == targetId ? changedTarget : item)
@@ -226,7 +263,8 @@ public sealed class CheckCoordinator : ICheckExecutionState, IDisposable
             status,
             completedAt,
             contentHash,
-            null);
+            null,
+            diff);
 
         return new RepositoryUpdate<CheckResult>(changedTargets, result);
     }

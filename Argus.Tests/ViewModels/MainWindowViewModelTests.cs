@@ -22,7 +22,46 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.OpenManualCommand.CanExecute(null));
         Assert.True(viewModel.EditCommand.CanExecute(null));
         Assert.True(viewModel.DeleteCommand.CanExecute(null));
+        Assert.False(viewModel.ShowDiffCommand.CanExecute(null));
         Assert.Equal("選択 1件", viewModel.SelectionSummary);
+    }
+
+    /// <summary>更新ありの行だけ差分表示コマンドを利用できることを検証</summary>
+    [Fact]
+    public async Task ShowDiffAsync_WhenUpdatedRowSelected_PassesDiffToDialog()
+    {
+        using var context = TestContext.Create();
+        using var viewModel = context.CreateViewModel();
+        var row = viewModel.Rows[0];
+        var diff = new ContentDiff([
+            new ContentDiffEntry(ChangeKind.Changed, "old", "new")]);
+        row.ApplyCheckResult(new CheckResult(
+            Guid.NewGuid(), row.TargetId, CheckStatus.Updated,
+            DateTimeOffset.UtcNow, "hash", null, diff));
+        viewModel.SetSelection([row]);
+
+        await viewModel.ShowDiffCommand.ExecuteAsync(null);
+
+        Assert.Same(diff, context.Dialog.LastDiff);
+        Assert.Equal("Example", context.Dialog.LastDiffTarget?.Name);
+    }
+
+    /// <summary>比較内容がない更新結果では差分表示理由を通知することを検証</summary>
+    [Fact]
+    public async Task ShowDiffAsync_WhenUpdatedRowHasNoDiff_ShowsReason()
+    {
+        using var context = TestContext.Create();
+        using var viewModel = context.CreateViewModel();
+        var row = viewModel.Rows[0];
+        row.ApplyCheckResult(new CheckResult(
+            Guid.NewGuid(), row.TargetId, CheckStatus.Updated,
+            DateTimeOffset.UtcNow, "hash", null));
+        viewModel.SetSelection([row]);
+
+        await viewModel.ShowDiffCommand.ExecuteAsync(null);
+
+        Assert.Contains("比較内容", context.Dialog.LastErrorMessage);
+        Assert.Null(context.Dialog.LastDiff);
     }
 
     /// <summary>Coreの実行開始と完了イベントが一覧行と集計へ反映されることを検証</summary>
@@ -274,6 +313,12 @@ public sealed class MainWindowViewModelTests
         /// <summary>直近に表示を依頼されたエラーメッセージ</summary>
         public string? LastErrorMessage { get; private set; }
 
+        /// <summary>直近に差分表示を依頼された比較結果</summary>
+        public ContentDiff? LastDiff { get; private set; }
+
+        /// <summary>直近に差分表示を依頼された監視対象</summary>
+        public WatchTarget? LastDiffTarget { get; private set; }
+
         /// <summary>編集画面を表示せずキャンセル結果を返却</summary>
         public async Task<WatchTarget?> ShowTargetEditorAsync(
             WatchTarget? target,
@@ -297,6 +342,17 @@ public sealed class MainWindowViewModelTests
         public Task ShowErrorAsync(string message, CancellationToken cancellationToken)
         {
             LastErrorMessage = message;
+            return Task.CompletedTask;
+        }
+
+        /// <summary>画面を開かず差分表示の引数だけを記録</summary>
+        public Task ShowContentDiffAsync(
+            WatchTarget target,
+            ContentDiff diff,
+            CancellationToken cancellationToken)
+        {
+            LastDiffTarget = target;
+            LastDiff = diff;
             return Task.CompletedTask;
         }
     }

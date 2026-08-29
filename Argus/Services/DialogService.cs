@@ -44,6 +44,19 @@ public sealed class DialogService(Func<Window?> ownerProvider) : IDialogService
         await window.ShowDialog<bool>(GetOwner());
     }
 
+    /// <summary>Coreの差分結果を専用ViewModelへ渡してモーダル表示</summary>
+    public async Task ShowContentDiffAsync(
+        WatchTarget target,
+        ContentDiff diff,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(diff);
+        var window = new ContentDiffWindow(new ContentDiffDialogViewModel(target, diff));
+        using var registration = cancellationToken.Register(() => window.Close());
+        await window.ShowDialog<bool>(GetOwner());
+    }
+
     /// <summary>モーダル画面の所有者が失われた場合を明示的なエラーとして検出</summary>
     private Window GetOwner() =>
         ownerProvider() ?? throw new InvalidOperationException("メイン画面が利用できません。");

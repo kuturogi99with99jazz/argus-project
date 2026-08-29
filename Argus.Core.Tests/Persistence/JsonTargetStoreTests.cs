@@ -45,7 +45,7 @@ public sealed class JsonTargetStoreTests : IDisposable
                     WatchMode.HtmlText,
                     true,
                     "メモ",
-                    new WatchSnapshot(new string('a', 64), checkedAt)),
+                    new WatchSnapshot(new string('a', 64), checkedAt, "保存する比較内容")),
                 new WatchTarget(
                     Guid.NewGuid(),
                     "Second",
@@ -65,6 +65,40 @@ public sealed class JsonTargetStoreTests : IDisposable
         Assert.Equal(2, loaded.Targets.Count);
         Assert.Equal(firstId, loaded.Targets[0].Id);
         Assert.Equal(checkedAt, loaded.Targets[0].PreviousSnapshot?.CheckedAtUtc);
+        Assert.Equal("保存する比較内容", loaded.Targets[0].PreviousSnapshot?.ComparisonContent);
+    }
+
+    /// <summary>比較内容を持たない既存schema v1 JSONを後方互換で読み込むことを検証</summary>
+    [Fact]
+    public async Task LoadAsync_WhenComparisonContentIsMissing_LoadsSnapshotWithoutContent()
+    {
+        Directory.CreateDirectory(directory);
+        var id = Guid.NewGuid();
+        await File.WriteAllTextAsync(
+            filePath,
+            $$"""
+              {
+                "schemaVersion": 1,
+                "targets": [
+                  {
+                    "id": "{{id}}",
+                    "name": "Legacy",
+                    "url": "https://example.com/",
+                    "mode": "htmlText",
+                    "isEnabled": true,
+                    "previousSnapshot": {
+                      "contentHash": "{{new string('a', 64)}}",
+                      "checkedAtUtc": "2026-08-01T00:00:00Z"
+                    }
+                  }
+                ]
+              }
+              """);
+
+        var loaded = await new JsonTargetStore(filePath).LoadAsync(CancellationToken.None);
+
+        Assert.Equal(new string('a', 64), loaded.Targets[0].PreviousSnapshot?.ContentHash);
+        Assert.Null(loaded.Targets[0].PreviousSnapshot?.ComparisonContent);
     }
 
     /// <summary>追加した比較方式とCSSセレクタがJSONを往復できることを検証</summary>

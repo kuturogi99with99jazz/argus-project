@@ -1,0 +1,111 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Argus.ViewModels"
+        x:Class="Argus.Views.ContentDiffWindow"
+        x:DataType="vm:ContentDiffDialogViewModel"
+        Title="差分表示"
+        Width="920"
+        Height="680"
+        MinWidth="620"
+        MinHeight="420"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppWindowBackgroundBrush}"
+        KeyDown="ContentDiffWindow_KeyDown">
+  <Border Margin="18"
+          Padding="20"
+          Background="{DynamicResource AppPanelBackgroundBrush}"
+          BorderBrush="{DynamicResource AppPanelBorderBrush}"
+          BorderThickness="1">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+      <TextBlock FontSize="22"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource AppHeadingBrush}"
+                 Text="{Binding Title}" />
+      <StackPanel Grid.Row="1" Spacing="3">
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="{Binding ModeText}" />
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="{Binding Summary}" />
+      </StackPanel>
+      <Border Grid.Row="2"
+              Padding="8"
+              Background="{DynamicResource AppSubtleBackgroundBrush}"
+              BorderBrush="{DynamicResource AppPanelBorderBrush}"
+              BorderThickness="1">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding Entries}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ContentDiffEntryViewModel">
+                <Border Margin="0,0,0,8"
+                        Padding="8"
+                        Background="{DynamicResource AppPanelBackgroundBrush}"
+                        BorderBrush="{DynamicResource AppPanelBorderBrush}"
+                        BorderThickness="1">
+                  <Grid ColumnDefinitions="Auto,Auto,*"
+                        RowDefinitions="Auto,Auto"
+                        ColumnSpacing="10"
+                        RowSpacing="5">
+                    <Border Grid.RowSpan="2"
+                            Padding="8,5"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource AppDiffAddedBackgroundBrush}"
+                            IsVisible="{Binding IsAdded}">
+                      <TextBlock FontWeight="SemiBold"
+                                 Foreground="{DynamicResource AppDiffAddedForegroundBrush}"
+                                 Text="＋ 追加" />
+                    </Border>
+                    <Border Grid.RowSpan="2"
+                            Padding="8,5"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource AppDiffRemovedBackgroundBrush}"
+                            IsVisible="{Binding IsRemoved}">
+                      <TextBlock FontWeight="SemiBold"
+                                 Foreground="{DynamicResource AppDiffRemovedForegroundBrush}"
+                                 Text="− 削除" />
+                    </Border>
+                    <Border Grid.RowSpan="2"
+                            Padding="8,5"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource AppDiffChangedBackgroundBrush}"
+                            IsVisible="{Binding IsChanged}">
+                      <TextBlock FontWeight="SemiBold"
+                                 Foreground="{DynamicResource AppDiffChangedForegroundBrush}"
+                                 Text="↔ 変更" />
+                    </Border>
+                    <TextBlock Grid.Column="1"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AppMutedTextBrush}"
+                               Text="前回" />
+                    <TextBlock Grid.Column="2"
+                               MaxWidth="760"
+                               Foreground="{DynamicResource AppTextBrush}"
+                               Text="{Binding PreviousText}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="1"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AppMutedTextBrush}"
+                               Text="今回" />
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="2"
+                               MaxWidth="760"
+                               Foreground="{DynamicResource AppTextBrush}"
+                               Text="{Binding CurrentText}"
+                               TextWrapping="Wrap" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+      <Button Grid.Row="3"
+              Width="110"
+              HorizontalAlignment="Right"
+              Content="閉じる"
+              IsDefault="True"
+              IsCancel="True"
+              Click="CloseButton_Click" />
+    </Grid>
+  </Border>
+</Window>

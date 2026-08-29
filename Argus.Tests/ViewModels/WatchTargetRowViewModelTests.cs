@@ -37,6 +37,25 @@ public sealed class WatchTargetRowViewModelTests
         Assert.Equal("—", row.ErrorText);
     }
 
+    /// <summary>更新あり以外の結果を受け取ったときに一時差分を破棄することを検証</summary>
+    [Fact]
+    public void ApplyCheckResult_WhenError_ClearsPreviousDiff()
+    {
+        var target = CreateTarget(WatchMode.HtmlText, true);
+        var row = new WatchTargetRowViewModel(target);
+        var diff = new ContentDiff([
+            new ContentDiffEntry(ChangeKind.Changed, "old", "new")]);
+
+        row.ApplyCheckResult(new CheckResult(
+            Guid.NewGuid(), target.Id, CheckStatus.Updated,
+            DateTimeOffset.UtcNow, "hash", null, diff));
+        row.ApplyCheckResult(new CheckResult(
+            Guid.NewGuid(), target.Id, CheckStatus.Error,
+            DateTimeOffset.UtcNow, null, "error"));
+
+        Assert.Null(row.Diff);
+    }
+
     /// <summary>テストごとに同じ必須値を持つ監視対象を生成</summary>
     private static WatchTarget CreateTarget(WatchMode mode, bool isEnabled) =>
         new(

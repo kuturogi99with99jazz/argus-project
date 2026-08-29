@@ -29,6 +29,104 @@ public sealed class CheckCoordinatorTests
 
         Assert.Equal(2, tasks.Count);
         Assert.All(results, result => Assert.Equal(CheckStatus.FirstFetch, result.Status));
+        Assert.All(results, result => Assert.Null(result.Diff));
+    }
+
+    /// <summary>正常チェックで抽出済み比較内容をスナップショットへ保存することを検証</summary>
+    [Fact]
+    public async Task SuccessfulCheck_SavesComparisonContentAndReturnsNoDiffOnFirstFetch()
+    {
+        var target = CreateTarget(true);
+        var repository = new WatchTargetRepository(
+            new MemoryStore(),
+            new TargetStoreDocument(TargetStoreDocument.CurrentSchemaVersion, [target]));
+        var coordinator = CreateCoordinator(repository, new FixedFetcher("first"));
+
+        var result = await Assert.Single(
+            coordinator.StartSelected([target.Id], CancellationToken.None));
+
+        Assert.Equal(CheckStatus.FirstFetch, result.Status);
+        Assert.Null(result.Diff);
+        Assert.Equal("first", repository.Find(target.Id)?.PreviousSnapshot?.ComparisonContent);
+    }
+
+    /// <summary>更新あり時に前回と今回の比較内容から差分を返すことを検証</summary>
+    [Fact]
+    public async Task UpdatedCheck_ReturnsDiffAndStoresOnlyLatestComparisonContent()
+    {
+        var checkedAt = new WatchSnapshot(
+            new Sha256HashService().Compute("old"),
+            DateTimeOffset.UtcNow,
+            "old");
+        var target = CreateTarget(true) with { PreviousSnapshot = checkedAt };
+        var repository = new WatchTargetRepository(
+            new MemoryStore(),
+            new TargetStoreDocument(TargetStoreDocument.CurrentSchemaVersion, [target]));
+        var coordinator = CreateCoordinator(repository, new FixedFetcher("new"));
+
+        var result = await Assert.Single(
+            coordinator.StartSelected([target.Id], CancellationToken.None));
+
+        Assert.Equal(CheckStatus.Updated, result.Status);
+        var entry = Assert.Single(result.Diff!.Entries);
+        Assert.Equal(ChangeKind.Changed, entry.Kind);
+        Assert.Equal("old", entry.PreviousText);
+        Assert.Equal("new", entry.CurrentText);
+        Assert.Equal("new", repository.Find(target.Id)?.PreviousSnapshot?.ComparisonContent);
+    }
+
+    /// <summary>比較内容がない既存スナップショットでもハッシュ判定と内容更新を継続することを検証</summary>
+    [Fact]
+    public async Task UpdatedCheck_WhenPreviousComparisonContentIsMissing_KeepsHashBasedStatusAndStoresCurrentContent()
+    {
+        var target = CreateTarget(true) with
+        {
+            PreviousSnapshot = new WatchSnapshot(
+                new Sha256HashService().Compute("old"),
+                DateTimeOffset.UtcNow)
+        };
+        var repository = new WatchTargetRepository(
+            new MemoryStore(),
+            new TargetStoreDocument(TargetStoreDocument.CurrentSchemaVersion, [target]));
+        var coordinator = CreateCoordinator(repository, new FixedFetcher("new"));
+
+        var result = await Assert.Single(
+            coordinator.StartSelected([target.Id], CancellationToken.None));
+
+        Assert.Equal(CheckStatus.Updated, result.Status);
+        Assert.Null(result.Diff);
+        Assert.Equal("new", repository.Find(target.Id)?.PreviousSnapshot?.ComparisonContent);
+    }
+
+    /// <summary>差分生成に失敗した場合に正常スナップショットと保存処理を保護することを検証</summary>
+    [Fact]
+    public async Task UpdatedCheck_WhenDiffGenerationFails_KeepsPreviousSnapshotAndDoesNotSave()
+    {
+        var snapshot = new WatchSnapshot(
+            new Sha256HashService().Compute("old"),
+            DateTimeOffset.UtcNow,
+            "old");
+        var target = CreateTarget(true) with { PreviousSnapshot = snapshot };
+        var store = new RecordingMemoryStore();
+        var repository = new WatchTargetRepository(
+            store,
+            new TargetStoreDocument(TargetStoreDocument.CurrentSchemaVersion, [target]));
+        var checkService = new WatchCheckService(
+            new FixedFetcher("new"),
+            new StubNormalizer(),
+            new Sha256HashService());
+        var coordinator = new CheckCoordinator(
+            repository,
+            checkService,
+            contentDiffService: new ThrowingDiffService());
+
+        var result = await Assert.Single(
+            coordinator.StartSelected([target.Id], CancellationToken.None));
+
+        Assert.Equal(CheckStatus.Error, result.Status);
+        Assert.Equal("差分を生成できませんでした。", result.ErrorMessage);
+        Assert.Equal(snapshot, repository.Find(target.Id)?.PreviousSnapshot);
+        Assert.Equal(0, store.SaveCount);
     }
 
 
@@ -198,6 +296,22 @@ public sealed class CheckCoordinatorTests
         /// <summary>外部依存の応答をテストシナリオから制御可能にするための実装</summary>
         public Task<string> FetchAsync(Uri uri, CancellationToken cancellationToken) =>
             Task.FromResult("<p>content</p>");
+    }
+
+    /// <summary>固定したHTMLを返して比較内容の保存を検証する取得スタブ</summary>
+    private sealed class FixedFetcher(string html) : IWebPageFetcher
+    {
+        /// <summary>外部サイトへ接続せず指定HTMLを返却</summary>
+        public Task<string> FetchAsync(Uri uri, CancellationToken cancellationToken) =>
+            Task.FromResult(html);
+    }
+
+    /// <summary>差分生成失敗時の保存保護を再現するテスト用サービス</summary>
+    private sealed class ThrowingDiffService : IContentDiffService
+    {
+        /// <summary>差分生成を失敗させるためのテスト実装</summary>
+        public ContentDiff Generate(string previousContent, string currentContent) =>
+            throw new InvalidOperationException("diff");
     }
 
     /// <summary>外部依存や並行状態を決定的に制御するためのテスト補助型</summary>

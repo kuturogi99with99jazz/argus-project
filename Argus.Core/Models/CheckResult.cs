@@ -7,4 +7,5 @@ public sealed record CheckResult(
     CheckStatus Status,
     DateTimeOffset CompletedAtUtc,
     string? ContentHash,
-    string? ErrorMessage);
+    string? ErrorMessage,
+    ContentDiff? Diff = null);

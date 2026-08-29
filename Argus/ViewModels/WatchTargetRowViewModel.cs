@@ -8,6 +8,7 @@ public sealed class WatchTargetRowViewModel : ViewModelBase
     private CheckStatus status = CheckStatus.Unchecked;
     private DateTimeOffset? lastCheckedAtUtc;
     private string? errorMessage;
+    private ContentDiff? diff;
     private int runningCount;
 
     /// <summary>Coreモデルを画面表示用の初期状態へ変換</summary>
@@ -71,6 +72,13 @@ public sealed class WatchTargetRowViewModel : ViewModelBase
         private set => SetField(ref errorMessage, value);
     }
 
+    /// <summary>直近の更新あり結果に紐づく一時的な差分</summary>
+    public ContentDiff? Diff
+    {
+        get => diff;
+        private set => SetField(ref diff, value);
+    }
+
     /// <summary>同じ対象で待機または実行中のチェック件数</summary>
     public int RunningCount
     {
@@ -112,6 +120,7 @@ public sealed class WatchTargetRowViewModel : ViewModelBase
         Status = result.Status;
         LastCheckedAtUtc = result.CompletedAtUtc;
         ErrorMessage = result.ErrorMessage;
+        Diff = result.Status == CheckStatus.Updated ? result.Diff : null;
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(LastCheckedText));
         OnPropertyChanged(nameof(ErrorText));

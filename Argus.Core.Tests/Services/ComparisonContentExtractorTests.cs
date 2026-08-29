@@ -6,6 +6,24 @@ namespace Argus.Core.Tests.Services;
 /// <summary>監視モードごとの比較対象抽出規則を検証するテスト</summary>
 public sealed class ComparisonContentExtractorTests
 {
+    /// <summary>三つの比較方式が差分入力となる比較文字列をそれぞれ生成することを検証</summary>
+    [Theory]
+    [InlineData(WatchMode.HtmlText, null, "<html><body>  Visible  </body></html>", "Visible")]
+    [InlineData(WatchMode.HtmlWhole, null, "<p>Whole</p>", "<p>Whole</p>")]
+    [InlineData(WatchMode.CssSelector, ".item", "<p class='item'>Selected</p><p>Ignore</p>", "<p class=\"item\">Selected</p>")]
+    public void Extract_WhenModeIsSelected_ReturnsComparisonContentForDiff(
+        WatchMode mode,
+        string? selector,
+        string html,
+        string expected)
+    {
+        var extractor = new ComparisonContentExtractor(new HtmlTextNormalizer());
+
+        var result = extractor.Extract(CreateTarget(mode, selector), html);
+
+        Assert.Equal(expected, result);
+    }
+
     /// <summary>HTML全体比較で取得文字列が加工されないことを検証</summary>
     [Fact]
     public void Extract_WhenModeIsHtmlWhole_ReturnsOriginalHtml()

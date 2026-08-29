@@ -113,6 +113,7 @@ public sealed class WatchCheckServiceTests
         var attempt = await service.FetchHashAsync(target, CancellationToken.None);
 
         Assert.True(attempt.IsSuccess);
+        Assert.Equal("content", attempt.ComparisonContent);
         Assert.Same(target, extractor.Target);
         Assert.Equal("<p>content</p>", extractor.Html);
     }
