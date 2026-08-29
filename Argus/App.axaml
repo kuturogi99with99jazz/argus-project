@@ -27,7 +27,7 @@
           <SolidColorBrush x:Key="AppGridHeaderBrush" Color="#DCE7F3" />
           <SolidColorBrush x:Key="AppGridAlternateRowBrush" Color="#F6F9FC" />
           <SolidColorBrush x:Key="AppGridSelectionBrush" Color="#CFE2FF" />
-          <SolidColorBrush x:Key="AppGridSurfaceOverlayBrush" Color="#EBFFFFFF" />
+          <SolidColorBrush x:Key="AppGridSurfaceOverlayBrush" Color="#E0FFFFFF" />
           <SolidColorBrush x:Key="AppDiffAddedBackgroundBrush" Color="#DCFCE7" />
           <SolidColorBrush x:Key="AppDiffAddedForegroundBrush" Color="#14532D" />
           <SolidColorBrush x:Key="AppDiffRemovedBackgroundBrush" Color="#FEE2E2" />
@@ -59,7 +59,7 @@
           <SolidColorBrush x:Key="AppGridHeaderBrush" Color="#253956" />
           <SolidColorBrush x:Key="AppGridAlternateRowBrush" Color="#1C2A40" />
           <SolidColorBrush x:Key="AppGridSelectionBrush" Color="#234F86" />
-          <SolidColorBrush x:Key="AppGridSurfaceOverlayBrush" Color="#F2172337" />
+          <SolidColorBrush x:Key="AppGridSurfaceOverlayBrush" Color="#EB172337" />
           <SolidColorBrush x:Key="AppDiffAddedBackgroundBrush" Color="#14532D" />
           <SolidColorBrush x:Key="AppDiffAddedForegroundBrush" Color="#DCFCE7" />
           <SolidColorBrush x:Key="AppDiffRemovedBackgroundBrush" Color="#7F1D1D" />

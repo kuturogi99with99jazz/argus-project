@@ -17,4 +17,14 @@ public sealed class MainWindowViewTests
         Assert.Contains("設定をインポート", xaml, StringComparison.Ordinal);
         Assert.Contains("設定をエクスポート", xaml, StringComparison.Ordinal);
     }
+
+    /// <summary>一覧背景の透かしがキャラクターを認識できる濃さに設定されることを検証</summary>
+    [Fact]
+    public void AppStyles_GridSurfaceOverlayKeepsBannerVisible()
+    {
+        var xaml = File.ReadAllText(Path.Combine(RepositoryRoot, "Argus", "App.axaml"));
+
+        Assert.Contains("<SolidColorBrush x:Key=\"AppGridSurfaceOverlayBrush\" Color=\"#E0FFFFFF\" />", xaml, StringComparison.Ordinal);
+        Assert.Contains("<SolidColorBrush x:Key=\"AppGridSurfaceOverlayBrush\" Color=\"#EB172337\" />", xaml, StringComparison.Ordinal);
+    }
 }
