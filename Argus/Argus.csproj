@@ -33,8 +33,4 @@
     <EmbeddedResource Include="..\Manual\entry.png" Link="Manual\entry.png" LogicalName="Argus.Manual.entry.png" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="Packaging\macOS\Info.plist" />
-  </ItemGroup>
-
 </Project>

@@ -7,9 +7,9 @@
 - 対応要件: `Design/requirement.md`
 - 最終更新日: 2026-08-29
 
-本書は、Avalonia を唯一の正式 UI とする Windows / macOS デスクトップアプリ Argus の設計を定義します。2026-08-12 に PoC から正式採用へ移行し、WinForms 版は廃止します。
+本書は、Avalonia を唯一の正式 UI とする Windows 専用デスクトップアプリ Argus の設計を定義します。2026-08-12 に PoC から正式採用へ移行し、2026-08-29 にmacOS対応を当面の対象外としました。WinForms 版は廃止します。
 
-v0.2.0 の現行実装に加え、MVP後に実装する自動監視、OS標準ローカル通知、タスクバー／Dockバッジの拡張方針も定義します。これらは v0.2.0 の完了条件には含めません。
+v0.2.0 の現行実装に加え、MVP後に実装する自動監視、Windows OS標準ローカル通知、タスクバーバッジ、CSSセレクタ設定支援の拡張方針も定義します。これらは v0.2.0 の完了条件には含めません。
 
 ## 2. 設計目標
 
@@ -17,7 +17,7 @@ v0.2.0 の現行実装に加え、MVP後に実装する自動監視、OS標準�
 - HTML 取得、抽出、正規化、比較、差分生成、保存を独立してテストできるようにする
 - Core を UI フレームワークと OS から独立させる
 - エラー時に前回の正常な比較データを破壊しない
-- Windows と macOS で同じ機能と schema v1 JSON 契約を提供する
+- Windowsで同じ機能と schema v1 JSON 契約を提供する
 
 ## 3. システム構成
 
@@ -31,7 +31,7 @@ Argus.sln
 
 | プロジェクト | Target Framework | 役割 |
 | --- | --- | --- |
-| `Argus` | `net10.0` | Windows / macOS 向け正式 UI |
+| `Argus` | `net10.0` | Windows 向け正式 UI |
 | `Argus.Tests` | `net10.0` | UI を生成しないプレゼンテーション層テスト |
 | `Argus.Core` | `net10.0` | UI 非依存の業務処理と永続化 |
 | `Argus.Core.Tests` | `net10.0` | Core の単体テスト |
@@ -70,8 +70,11 @@ flowchart LR
 | `SettingsFileDialogService` | 設定ファイルの保存先と読込元をユーザーに選択させるUI境界 |
 | `AutomaticCheckScheduler` | 設定した間隔で有効な監視対象のチェックを起動し、アプリ終了・停止時のキャンセルを管理する |
 | `MonitoringSettingsStore` | 自動監視設定、通知設定、未確認更新状態を targets.json と分離して保存する |
-| `LocalNotificationService` | Windows または macOS の OS 標準ローカル通知へ更新検出を渡す |
-| `ApplicationBadgeService` | Windows のタスクバーまたは macOS の Dock の未確認件数バッジを更新する |
+| `LocalNotificationService` | Windows の OS 標準ローカル通知へ更新検出を渡す |
+| `ApplicationBadgeService` | Windows のタスクバーの未確認件数バッジを更新する |
+| `CssSelectorPromptBuilder` | URL と監視したい箇所の説明から AI 相談用プロンプトを生成する |
+| `CssSelectorPromptViewModel` | AI 相談用小窓の入力、表示、コピー状態を管理する |
+| `IClipboardService` / `AvaloniaClipboardService` | UIから分離したクリップボードへのテキストコピーを提供する |
 
 外部 DI コンテナーは追加せず、`App` の起動時に依存関係を手動構築します。`HttpClient` はアプリ単位で一つ生成し、終了時に破棄します。
 
@@ -79,12 +82,12 @@ flowchart LR
 
 - JSON は schema v1、UTF-8、camelCase、UTC日時を維持する。差分表示用の比較対象内容は `previousSnapshot.comparisonContent` として追加する任意項目とし、既存のschema v1 JSONを読み込める後方互換の拡張とする
 - Windows の保存先は `%APPDATA%\Argus\targets.json` とし、WinForms v0.1.0 のデータを移行なしで読み込む
-- macOS の保存先は `~/Library/Application Support/Argus/targets.json` とする
 - 保存は同一ディレクトリの一時ファイルへ書き、成功後に置換する
 - 取得、抽出、正規化、ハッシュ、保存のいずれかに失敗した場合は前回の正常データを上書きしない
 - 既存の比較判定とschema v1の読み込み互換性を維持しつつ、差分表示に必要な比較内容と差分結果を表現する最小限のCoreモデル・公開APIを追加する
 - 保存する比較対象内容は直近の正常チェック結果だけとし、チェック履歴は保持しない
 - 運用中の `targets.json` と設定移行用のポータブルJSONは別契約として扱い、相互に直接読み替えない
+- CSSセレクタ設定支援は保存データや比較スナップショットを変更しない。URLと監視したい箇所の説明は小窓でプロンプトを生成するためだけに使用する
 
 ### 5.1 設定移行用ポータブルJSON
 
@@ -158,7 +161,7 @@ flowchart LR
 4. 正常結果が確定した後、`Updated` かつ未確認更新の比較用ハッシュが異なる場合だけ、`MonitoringSettingsStore` の未確認状態を更新する
 5. 未確認状態の更新後に `LocalNotificationService` へ対象名を渡し、`ApplicationBadgeService` へ未確認対象のユニーク件数を渡す。通知またはバッジ更新の失敗はチェック結果の保存を取り消さない
 6. 通知の選択または一覧上の確認操作を受けた場合、対象を選択した状態で Argus を起動または前面表示し、未確認状態を削除してバッジ件数を再計算する
-7. アプリが起動中はバックグラウンドのスケジューラーで実行し、アプリが起動していない時間帯も監視する設定では Windows のログイン時起動／タスクスケジューラーまたは macOS の `launchd` など OS の起動機構から同じチェック処理を起動する
+7. アプリが起動中はバックグラウンドのスケジューラーで実行し、アプリが起動していない時間帯も監視する設定では Windows のログイン時起動／タスクスケジューラーなど OS の起動機構から同じチェック処理を起動する
 
 自動監視では初回取得、更新なし、エラーを通知対象とせず、更新ありだけを通知対象とします。比較対象の全文や秘密情報は OS 通知へ含めません。OS の通知権限が拒否されている場合も、一覧の状態と保存処理は通常どおり継続します。
 
@@ -183,18 +186,18 @@ HTTP 同時実行数はアプリ全体で最大4件とします。アプリ終�
 - ヘッダー右側のマニュアルボタンとテーマ切替には共通の `headerAction` スタイルを適用し、通常時は濃紺背景と白文字、ホバー時はアクセント背景と白文字で統一する
 - MVP後は、自動監視の有効状態、実行間隔、アプリ未起動時の監視、通知の有効状態を設定できる画面または設定領域を追加する
 - MVP後は、更新通知から対象を確認できる操作と、一覧上で未確認更新を確認済みにする操作を提供する
+- MVP後は、CSSセレクタ比較の入力欄に AI 相談ボタンを置き、URLと監視したい箇所の説明から生成したプロンプトを小窓へ表示する
+- AI 相談小窓は、生成プロンプトの読み取り専用表示、クリップボードへのコピー、コピー結果またはエラーの表示を提供する。外部 AI の起動、AI API 通信、ページ HTML の取得は行わない
 
 ## 8. OS固有処理
 
 - `Process.Start` と `UseShellExecute=true` により OS の既定ブラウザを利用する
 - マニュアル資産はアセンブリへ埋め込み、実行時にOSの一時領域にある `Argus/Manual/v0.2.0` へ固定名で展開する
 - 展開済み資産はブラウザ表示を継続できるようアプリ終了時に削除せず、旧バージョンの自動削除は行わない
-- Windows と macOS の例外をプラットフォーム非依存のユーザー向けメッセージへ変換する
-- macOS用 app bundle は `Info.plist`、`Contents/MacOS`、`Contents/Resources` を持つ
+- Windowsの例外をユーザー向けメッセージへ変換する
 - Windows のローカル通知は Windows App SDK の `AppNotificationManager` を候補とし、タスクバーの数値バッジは `BadgeNotificationManager` を候補とする。自己完結型 single-file 配布で必要となるアプリ識別と通知登録を別途検証する
-- macOS のローカル通知は UserNotifications のローカル通知、Dock の数値バッジは `NSDockTile.badgeLabel` を候補とする。通知権限の要求と拒否時の継続動作を実機で確認する
 - OS 固有の通知・バッジ実装は `Argus` 側のサービスへ閉じ込め、`Argus.Core` の公開 API とドメインモデルへ持ち込まない
-- Linux、Intel Mac、Windows arm64 は v0.2.0 の対象外とする
+- macOS、Linux、Windows arm64 は v0.2.0 の対象外とする
 
 ## 9. 配布設計
 
@@ -206,15 +209,6 @@ HTTP 同時実行数はアプリ全体で最大4件とします。アプリ終�
 - `PublishTrimmed=false`、`PublishReadyToRun=false`
 - `Manual/index.html`、`Manual/main.png`、`Manual/entry.png` を埋め込み、外部ファイルを追加しない
 
-### macOS
-
-- 対象: macOS 14以降、Apple Silicon
-- Runtime Identifier: `osx-arm64`
-- 成果物: `artifacts/Argus-macos-arm64/Argus.app`
-- 自己完結型として.NETランタイムを同梱する
-- HTMLマニュアルと画像を実行アセンブリへ埋め込む
-- Apple Developer署名、公証、インストーラー、自動更新は後続タスクとする
-
 ## 10. テスト設計
 
 - `Argus.Core.Tests` は実Webサイトへ接続せず、初回取得、更新なし、更新あり、通信エラー、データ保護、JSON読込、入力検証、並行実行を検証する
@@ -222,16 +216,17 @@ HTTP 同時実行数はアプリ全体で最大4件とします。アプリ終�
 - `Argus.Tests` は ViewModel、コマンド、表示変換、UIサービス境界を View なしで検証する
 - `Argus.Tests` は更新ありの行だけで差分表示操作が利用でき、差分ダイアログへ追加・削除・変更が渡されることを検証する
 - マニュアルコマンドの常時利用、成功・失敗結果と、HTML・画像の埋め込みリソースを自動テストする
-- Windows と macOS の双方で restore、Debug / Release build、全自動テストを実行する
-- 両OSで CRUD、全件／選択チェック、ブラウザ起動、再起動後の永続化、ライト／ダーク、キーボード、ダイアログ、アイコン、バージョンを手動確認する
-- MVP後のT-037では、両OSで設定のエクスポート、正常なインポート、形式エラー時の既存設定保持、インポート対象が初回取得になることを手動確認する
+- Windowsで restore、Debug / Release build、全自動テストを実行する
+- Windowsで CRUD、全件／選択チェック、ブラウザ起動、再起動後の永続化、ライト／ダーク、キーボード、ダイアログ、アイコン、バージョンを手動確認する
+- MVP後のT-037では、Windowsで設定のエクスポート、正常なインポート、形式エラー時の既存設定保持、インポート対象が初回取得になることを手動確認する
 - MVP後のT-038では、スケジューラーをテスト用時計とスタブへ差し替え、自動監視の有効対象、間隔、重複抑止、停止・キャンセル、エラー時のデータ保護を自動テストする
 - MVP後のT-039では、通知とバッジをスタブへ差し替え、更新ありだけの通知、同一ハッシュの重複通知抑止、未確認件数、確認済みへの遷移、通知失敗時の結果保持を自動テストする
-- Windows と macOS では、実機で OS 標準通知、通知権限拒否、通知選択による対象表示、タスクバー／Dock バッジ、アプリ再起動後の未確認件数復元を手動確認する
-- Windows の single-file と macOS の app bundle を発行先とは別の場所から起動する
+- MVP後のT-040では、URLと説明からのプロンプト生成、未入力時の案内、コピー成功・失敗、CSSモード以外での操作不可を自動テストし、Windowsで小窓・クリップボード・テーマ表示を手動確認する
+- Windowsでは、実機で OS 標準通知、通知権限拒否、通知選択による対象表示、タスクバー バッジ、アプリ再起動後の未確認件数復元を手動確認する
+- Windows の single-file を発行先とは別の場所から起動する
 
 ## 11. 正式採用決定
 
 PoCでは Core の変更なしに Avalonia UI を実装でき、Windows上で警告なしビルド、Core 67件・WinForms 15件・Avalonia 14件の計96件のテスト、起動、単一EXE発行を確認しました。Core再利用性を「高」、導入難易度を「中」と評価し、2026-08-12にAvaloniaを正式採用しました。
 
-正式採用により、WinFormsプロジェクトとテストを削除し、Avaloniaプロジェクトを `Argus`、テストを `Argus.Tests` へ改名します。未実施だったmacOS実機確認と全機能手動確認は、採用判断の前提ではなくv0.2.0リリース受け入れ条件として `Design/tasks.md` で追跡します。
+正式採用により、WinFormsプロジェクトとテストを削除し、Avaloniaプロジェクトを `Argus`、テストを `Argus.Tests` へ改名しました。2026-08-29の方針変更により、macOS向け発行・実機確認は現行のv0.2.0リリース受け入れ条件から除外します。

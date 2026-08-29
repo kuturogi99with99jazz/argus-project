@@ -498,7 +498,7 @@
       <p class="hero-copy">登録したWebページを、必要なときにまとめて確認。初めて使う方も、判定に迷った方も、このページだけで操作と考え方が分かります。</p>
       <ul class="hero-meta" aria-label="対応情報">
         <li>Avalonia正式版 v0.2.0</li>
-        <li>Windows / macOS</li>
+        <li>Windows</li>
         <li>手動チェック専用</li>
         <li>HTML・CSSセレクタ対応</li>
       </ul>
@@ -534,13 +534,13 @@
 
         <h3>必要なもの</h3>
         <ul>
-          <li>Windows 10 / 11（x64）、またはmacOS 14以降（Apple Silicon）</li>
+          <li>Windows 10 / 11（x64）</li>
           <li>インターネット接続</li>
           <li><code>http://</code> または <code>https://</code> で公開されている確認先ページ</li>
         </ul>
 
         <h3>起動方法</h3>
-        <p>Windowsでは<code>Argus.exe</code>、macOSでは<code>Argus.app</code>を開きます。初回起動時は一覧が空なので、まず監視対象を1件登録します。</p>
+        <p>Windowsでは<code>Argus.exe</code>を開きます。初回起動時は一覧が空なので、まず監視対象を1件登録します。</p>
         <p>アプリを起動した後は、メイン画面右上の「マニュアル」ボタンからいつでもこのページを開けます。マニュアル本文と画像はArgusに内蔵されているため、閲覧自体にインターネット接続は必要ありません。</p>
         <div class="callout warning">
           <p><strong>自動ではチェックされません。</strong> 更新を確認したいときにArgusを起動し、「全件チェック」または「選択をチェック」を実行してください。</p>
@@ -652,6 +652,10 @@
           <li>目的に合う監視モードを選びます。CSSセレクタ比較の場合だけ、CSSセレクタも入力します。</li>
           <li>「保存」をクリックし、メイン画面の一覧に追加されたことを確認します。</li>
         </ol>
+
+        <div class="callout info">
+          <p><strong>CSSセレクタが分からないとき（MVP後の追加機能）</strong><br>CSSセレクタ比較を選ぶと、CSSセレクタ欄の近くにAI相談ボタンが表示されます。クリックして監視したい箇所を入力すると、ChatGPTなどへ貼り付けるプロンプトを確認してコピーできます。ArgusからAIサービスへ自動送信したり、ページをAIへ送ったりはしません。</p>
+        </div>
 
         <h3>入力項目</h3>
         <div class="table-wrap">
@@ -799,7 +803,7 @@
       <section id="data">
         <h2><span class="num">Section 09</span>データの保存と安全性</h2>
         <p>監視対象と前回の正常なチェック結果は、次のJSONファイルに自動保存されます。</p>
-        <div class="callout"><p>Windows: <code>%APPDATA%\Argus\targets.json</code><br>macOS: <code>~/Library/Application Support/Argus/targets.json</code></p></div>
+        <div class="callout"><p>Windows: <code>%APPDATA%\Argus\targets.json</code></p></div>
         <p>追加、編集、削除、正常なチェックの完了時に更新されます。通常、このファイルを手動で編集する必要はありません。</p>
         <ul>
           <li>チェックがエラーになっても、前回の正常な比較データは保持されます。</li>
@@ -829,7 +833,7 @@
           <li>チェック履歴</li>
         </ul>
         <h3>MVP後の計画</h3>
-        <p>初期版では対応していませんが、MVP後に設定した間隔での自動監視、更新あり時のWindows／macOSのOS標準ローカル通知、未確認件数のタスクバー／Dockアイコンバッジを追加する計画です。LINE、Slack、メールなど外部サービスへの通知は、別途要件を追加するまで対象外です。</p>
+        <p>初期版では対応していませんが、MVP後に設定した間隔での自動監視、更新あり時のWindowsのOS標準ローカル通知、未確認件数のタスクバーアイコンバッジを追加する計画です。LINE、Slack、メールなど外部サービスへの通知は、別途要件を追加するまで対象外です。</p>
         <div class="callout">
           <p>1回の取得は30秒でタイムアウトします。多数の対象を実行すると最大4件を同時取得し、残りは順番に処理します。アプリ終了時は実行中・待機中のチェックがキャンセルされます。</p>
         </div>

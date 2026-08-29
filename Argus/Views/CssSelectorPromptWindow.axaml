@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Argus.ViewModels"
+        x:Class="Argus.Views.CssSelectorPromptWindow"
+        x:DataType="vm:CssSelectorPromptViewModel"
+        Title="AIにCSSセレクタを相談"
+        Icon="avares://Argus/Assets/argus-app-icon.ico"
+        Width="640"
+        Height="520"
+        MinWidth="520"
+        MinHeight="420"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppWindowBackgroundBrush}">
+  <Border Margin="18"
+          Padding="20"
+          Background="{DynamicResource AppPanelBackgroundBrush}"
+          BorderBrush="{DynamicResource AppPanelBorderBrush}"
+          BorderThickness="1">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="12">
+      <StackPanel Spacing="4">
+        <TextBlock FontSize="22"
+                   FontWeight="SemiBold"
+                   Foreground="{DynamicResource AppHeadingBrush}"
+                   Text="AIにCSSセレクタを相談" />
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}"
+                   Text="生成したプロンプトをChatGPTなどのAIへ貼り付けて相談できます。ArgusからAIへは送信しません。"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="1" Spacing="4">
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="監視したい箇所" />
+        <TextBox MinHeight="64"
+                 AcceptsReturn="True"
+                 Text="{Binding TargetDescription, Mode=TwoWay}"
+                 TextWrapping="Wrap"
+                 PlaceholderText="例: 最新記事のタイトルと更新日時だけ" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="2" Spacing="4">
+        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="AIへ貼り付けるプロンプト" />
+        <TextBox MinHeight="250"
+                 AcceptsReturn="True"
+                 IsReadOnly="True"
+                 Text="{Binding PromptText}"
+                 TextWrapping="Wrap"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="3" MinHeight="24" Spacing="2">
+        <TextBlock Foreground="{DynamicResource AppAccentBrush}" Text="{Binding CopyStatus}" TextWrapping="Wrap" />
+        <TextBlock Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="{Binding OperationError}" TextWrapping="Wrap" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Content="閉じる" IsCancel="True" Click="CloseButton_Click" />
+        <Button Classes="primary"
+                Command="{Binding CopyCommand}"
+                Content="コピー"
+                IsDefault="True" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

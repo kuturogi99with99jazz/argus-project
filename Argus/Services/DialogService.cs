@@ -7,8 +7,15 @@ using Argus.Core.Services;
 namespace Argus.Services;
 
 /// <summary>Avaloniaウィンドウを生成してViewModelへ結果だけを返すダイアログ実装</summary>
-public sealed class DialogService(Func<Window?> ownerProvider) : IDialogService
+public sealed class DialogService(
+    Func<Window?> ownerProvider,
+    IClipboardService clipboardService) : IDialogService
 {
+    private readonly Func<Window?> ownerProvider = ownerProvider ??
+        throw new ArgumentNullException(nameof(ownerProvider));
+    private readonly IClipboardService clipboardService = clipboardService ??
+        throw new ArgumentNullException(nameof(clipboardService));
+
     /// <summary>追加または編集ViewModelをモーダル画面へ接続</summary>
     public async Task<WatchTarget?> ShowTargetEditorAsync(
         WatchTarget? target,
@@ -16,8 +23,13 @@ public sealed class DialogService(Func<Window?> ownerProvider) : IDialogService
         CancellationToken cancellationToken)
     {
         var owner = GetOwner();
-        var viewModel = new TargetEditViewModel(target, saveAsync, cancellationToken);
-        var window = new TargetEditWindow(viewModel);
+        TargetEditWindow? window = null;
+        var viewModel = new TargetEditViewModel(
+            target,
+            saveAsync,
+            cancellationToken,
+            (url, token) => ShowCssSelectorPromptAsync(window, url, token));
+        window = new TargetEditWindow(viewModel);
         using var registration = cancellationToken.Register(() => window.Close(null));
         return await window.ShowDialog<WatchTarget?>(owner);
     }
@@ -55,6 +67,18 @@ public sealed class DialogService(Func<Window?> ownerProvider) : IDialogService
         var window = new ContentDiffWindow(new ContentDiffDialogViewModel(target, diff));
         using var registration = cancellationToken.Register(() => window.Close());
         await window.ShowDialog<bool>(GetOwner());
+    }
+
+    /// <summary>現在の編集画面を所有者としてCSSセレクタ相談小窓を表示</summary>
+    private async Task ShowCssSelectorPromptAsync(
+        Window? editorWindow,
+        string url,
+        CancellationToken cancellationToken)
+    {
+        var window = new CssSelectorPromptWindow(
+            new CssSelectorPromptViewModel(url, clipboardService, cancellationToken));
+        using var registration = cancellationToken.Register(() => window.Close());
+        await window.ShowDialog<bool>(editorWindow ?? GetOwner());
     }
 
     /// <summary>モーダル画面の所有者が失われた場合を明示的なエラーとして検出</summary>

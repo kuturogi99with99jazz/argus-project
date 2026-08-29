@@ -60,7 +60,8 @@ public sealed partial class App : Application
             var managementService = new WatchTargetManagementService(repository, coordinator);
             var applicationInfo = new ApplicationInfoProvider().Get();
             MainWindow? mainWindow = null;
-            var dialogService = new DialogService(() => mainWindow);
+            var clipboardService = new AvaloniaClipboardService(() => mainWindow);
+            var dialogService = new DialogService(() => mainWindow, clipboardService);
             var viewModel = new MainWindowViewModel(
                 repository,
                 managementService,

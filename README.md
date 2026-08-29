@@ -2,12 +2,12 @@
 
 # Argus
 
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-1769E0)](#動作環境)
+[![Platform](https://img.shields.io/badge/platform-Windows-1769E0)](#動作環境)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](#動作環境)
 [![Version](https://img.shields.io/badge/version-0.2.0-0f766e)](Argus/Argus.csproj)
 [![License: MIT](https://img.shields.io/badge/license-MIT-f5c542)](LICENSE)
 
-登録した Web ページの変化を、必要なときにまとめて確認できる Avalonia デスクトップアプリです。v0.2.0では自動監視ではなく、ユーザーがボタンを押したときだけチェックします。
+登録した Web ページの変化を、必要なときにまとめて確認できる Windows 専用 Avalonia デスクトップアプリです。v0.2.0では自動監視ではなく、ユーザーがボタンを押したときだけチェックします。
 
 ## 特長
 
@@ -29,11 +29,10 @@
 | 項目 | 要件 |
 | --- | --- |
 | Windows | Windows 10 / 11 x64 |
-| macOS | macOS 14以降、Apple Silicon |
 | SDK | ソースから実行する場合は.NET 10 SDK |
 | UI | Avalonia 12.1.0 |
 
-署名・公証、インストーラー、自動更新、Intel Mac、Linux、Windows arm64にはまだ対応していません。
+macOS、Linux、Windows arm64、署名・公証、インストーラー、自動更新にはまだ対応していません。
 
 ## はじめ方
 
@@ -66,7 +65,6 @@ dotnet test Argus.sln
 
 ```text
 Windows: %APPDATA%\Argus\targets.json
-macOS:   ~/Library/Application Support/Argus/targets.json
 ```
 
 Argusが外部データベースへ情報を送る機能はありません。チェック時には登録したURLへHTTP/HTTPSでアクセスします。エラー時は前回の正常なデータを上書きしません。
@@ -81,7 +79,7 @@ Argusが外部データベースへ情報を送る機能はありません。チ
 
 ## MVP後の計画
 
-MVP後は、設定した間隔での自動監視、更新あり時の Windows / macOS の OS 標準ローカル通知、未確認件数のタスクバー／Dockアイコンバッジを追加する予定です。LINE、Slack、メールなど外部サービスへの通知は、別途要件を追加するまで対象外です。
+MVP後は、CSSセレクタ設定時のAI相談用プロンプト支援、設定した間隔での自動監視、更新あり時の Windows OS 標準ローカル通知、未確認件数のタスクバーアイコンバッジを追加する予定です。AIサービスへの自動送信や、LINE、Slack、メールなど外部サービスへの通知は行いません。
 
 ## プロジェクト構成
 

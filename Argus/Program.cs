@@ -2,7 +2,7 @@ using Avalonia;
 
 namespace Argus;
 
-/// <summary>WindowsとmacOSで共通するArgusのエントリーポイント</summary>
+/// <summary>Windows向けArgusのエントリーポイント</summary>
 internal static class Program
 {
     /// <summary>デスクトップホストを初期化してアプリケーションライフサイクルを開始</summary>

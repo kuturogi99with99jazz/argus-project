@@ -4,11 +4,11 @@
 
 ## プロジェクト概要
 
-Argus は、登録した Web ページの更新有無をユーザーが手動で確認するための Windows / macOS デスクトップアプリです。
+Argus は、登録した Web ページの更新有無をユーザーが手動で確認するための Windows 専用デスクトップアプリです。
 
 初期版では、以下の技術を使用します。
 
-- OS: Windows 10 / Windows 11 x64、macOS 14 以降 Apple Silicon
+- OS: Windows 10 / Windows 11 x64
 - UI: Avalonia
 - 言語: C#
 - フレームワーク: .NET 10 以降

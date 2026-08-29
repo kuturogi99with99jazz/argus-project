@@ -4,7 +4,7 @@ using Argus.Core.Models;
 
 namespace Argus.Services;
 
-/// <summary>WindowsとmacOSのシェルを通じて既定ブラウザを起動するサービス</summary>
+/// <summary>Windowsのシェルを通じて既定ブラウザを起動するサービス</summary>
 public sealed class BrowserService : IBrowserService
 {
     /// <summary>HTTPまたはHTTPSの検証済みURLだけをOSへ引き渡し</summary>

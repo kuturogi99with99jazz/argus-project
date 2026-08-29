@@ -7,6 +7,7 @@ namespace Argus.ViewModels;
 public sealed class TargetEditViewModel : ViewModelBase
 {
     private readonly Func<WatchTargetInput, CancellationToken, Task<WatchTargetChangeResult>> saveAsync;
+    private readonly Func<string, CancellationToken, Task>? showCssSelectorPromptAsync;
     private string name;
     private string url;
     private WatchMode selectedMode;
@@ -23,9 +24,11 @@ public sealed class TargetEditViewModel : ViewModelBase
     public TargetEditViewModel(
         WatchTarget? target,
         Func<WatchTargetInput, CancellationToken, Task<WatchTargetChangeResult>> saveAsync,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<string, CancellationToken, Task>? showCssSelectorPromptAsync = null)
     {
         this.saveAsync = saveAsync ?? throw new ArgumentNullException(nameof(saveAsync));
+        this.showCssSelectorPromptAsync = showCssSelectorPromptAsync;
         name = target?.Name ?? string.Empty;
         url = target?.Url.AbsoluteUri ?? string.Empty;
         selectedMode = target?.Mode ?? WatchMode.HtmlText;
@@ -38,6 +41,11 @@ public sealed class TargetEditViewModel : ViewModelBase
             onException: exception => OperationError = exception.Message,
             cancellationToken: cancellationToken);
         CancelCommand = new RelayCommand(_ => CancelRequested?.Invoke(this, EventArgs.Empty));
+        ShowCssSelectorPromptCommand = new AsyncCommand(
+            (_, token) => ShowCssSelectorPromptAsync(token),
+            _ => IsCssSelectorVisible && this.showCssSelectorPromptAsync is not null,
+            onException: exception => OperationError = exception.Message,
+            cancellationToken: cancellationToken);
     }
 
     public event EventHandler? Saved;
@@ -62,6 +70,7 @@ public sealed class TargetEditViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(IsCssSelectorVisible));
                 OnPropertyChanged(nameof(SelectedModeOption));
+                ShowCssSelectorPromptCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -84,6 +93,9 @@ public sealed class TargetEditViewModel : ViewModelBase
 
     /// <summary>CSSセレクタ比較のときだけ固有入力欄を表示する状態</summary>
     public bool IsCssSelectorVisible => SelectedMode == WatchMode.CssSelector;
+
+    /// <summary>CSSセレクタ設定をAIへ相談する小窓を表示する非同期コマンド</summary>
+    public AsyncCommand ShowCssSelectorPromptCommand { get; }
 
     /// <summary>選択可能な監視モード一覧</summary>
     public IReadOnlyList<WatchModeOption> ModeOptions => WatchModeOption.All;
@@ -146,6 +158,12 @@ public sealed class TargetEditViewModel : ViewModelBase
 
         OperationError ??= result.ErrorMessage;
     }
+
+    /// <summary>現在入力中のURLをUIサービス境界へ渡してAI相談小窓を表示</summary>
+    private Task ShowCssSelectorPromptAsync(CancellationToken cancellationToken) =>
+        showCssSelectorPromptAsync is null
+            ? Task.CompletedTask
+            : showCssSelectorPromptAsync(Url, cancellationToken);
 
     /// <summary>再保存時に古い検証メッセージが残らないよう入力エラーを初期化</summary>
     private void ClearErrors()

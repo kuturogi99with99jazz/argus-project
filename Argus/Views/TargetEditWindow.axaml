@@ -43,11 +43,24 @@
         <CheckBox Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding IsEnabled}" Content="有効" />
       </Grid>
 
-      <StackPanel Grid.Row="4" Spacing="4" IsVisible="{Binding IsCssSelectorVisible}">
-        <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="CSS セレクタ" />
-        <TextBox Text="{Binding CssSelector}" PlaceholderText="例: main article" />
-        <TextBlock Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="{Binding CssSelectorError}" TextWrapping="Wrap" />
-      </StackPanel>
+      <Grid Grid.Row="4" ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding IsCssSelectorVisible}">
+        <StackPanel Spacing="4">
+          <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="CSS セレクタ" />
+          <TextBox Text="{Binding CssSelector}" PlaceholderText="例: main article" />
+          <TextBlock Foreground="{DynamicResource SystemFillColorCriticalBrush}" Text="{Binding CssSelectorError}" TextWrapping="Wrap" />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Width="36"
+                Height="36"
+                Padding="8"
+                VerticalAlignment="Top"
+                Classes="aiAction"
+                Command="{Binding ShowCssSelectorPromptCommand}"
+                ToolTip.Tip="AIにCSSセレクタを相談"
+                AutomationProperties.Name="AIにCSSセレクタを相談">
+          <PathIcon Width="18" Height="18" Data="{StaticResource IconAi}" />
+        </Button>
+      </Grid>
 
       <StackPanel Grid.Row="5" Spacing="4">
         <TextBlock Foreground="{DynamicResource AppMutedTextBrush}" Text="メモ" />

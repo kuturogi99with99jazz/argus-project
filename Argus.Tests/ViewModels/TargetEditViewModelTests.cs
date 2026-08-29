@@ -19,6 +19,41 @@ public sealed class TargetEditViewModelTests
         Assert.True(viewModel.IsCssSelectorVisible);
     }
 
+    /// <summary>CSSセレクタ比較時だけAI相談コマンドへ現在のURLを渡すことを検証</summary>
+    [Fact]
+    public async Task ShowCssSelectorPromptCommand_WhenCssSelectorMode_PassesCurrentUrl()
+    {
+        string? capturedUrl = null;
+        var viewModel = CreateViewModel(
+            (_, _) => Task.FromResult(WatchTargetChangeResult.Success(null)),
+            (url, _) =>
+            {
+                capturedUrl = url;
+                return Task.CompletedTask;
+            });
+        viewModel.Url = "https://example.com/news";
+        viewModel.SelectedMode = WatchMode.CssSelector;
+
+        await viewModel.ShowCssSelectorPromptCommand.ExecuteAsync(null);
+
+        Assert.Equal("https://example.com/news", capturedUrl);
+    }
+
+    /// <summary>CSSセレクタ比較以外ではAI相談コマンドを実行できないことを検証</summary>
+    [Fact]
+    public void ShowCssSelectorPromptCommand_WhenModeIsNotCssSelector_CannotExecute()
+    {
+        var viewModel = CreateViewModel(
+            (_, _) => Task.FromResult(WatchTargetChangeResult.Success(null)),
+            (_, _) => Task.CompletedTask);
+
+        Assert.False(viewModel.ShowCssSelectorPromptCommand.CanExecute(null));
+
+        viewModel.SelectedMode = WatchMode.HtmlWhole;
+
+        Assert.False(viewModel.ShowCssSelectorPromptCommand.CanExecute(null));
+    }
+
     /// <summary>Coreの項目別入力エラーが対応する表示プロパティへ反映されることを検証</summary>
     [Fact]
     public async Task SaveAsync_WhenCoreReturnsValidationErrors_MapsFieldErrors()
@@ -67,6 +102,7 @@ public sealed class TargetEditViewModelTests
 
     /// <summary>保存処理を差し替えた編集ViewModelを生成</summary>
     private static TargetEditViewModel CreateViewModel(
-        Func<WatchTargetInput, CancellationToken, Task<WatchTargetChangeResult>> saveAsync) =>
-        new(null, saveAsync, CancellationToken.None);
+        Func<WatchTargetInput, CancellationToken, Task<WatchTargetChangeResult>> saveAsync,
+        Func<string, CancellationToken, Task>? showCssSelectorPromptAsync = null) =>
+        new(null, saveAsync, CancellationToken.None, showCssSelectorPromptAsync);
 }

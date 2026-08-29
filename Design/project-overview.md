@@ -1,6 +1,6 @@
 # Argus
 
-Argus は、登録した Web ページの更新有無をユーザーが任意のタイミングで確認する、Windows / macOS デスクトップアプリです。
+Argus は、登録した Web ページの更新有無をユーザーが任意のタイミングで確認する、Windows 専用デスクトップアプリです。
 
 ## 目的
 
@@ -8,14 +8,13 @@ Argus は、登録した Web ページの更新有無をユーザーが任意の
 
 ## 正式採用方針
 
-2026-08-12、Avalonia UI PoC の結果を受け、Avalonia を唯一の正式 UI として採用しました。WinForms版は v0.2.0 で廃止し、Core と schema v1 JSON を維持したままクロスプラットフォーム版へ一本化します。
+2026-08-12、Avalonia UI PoC の結果を受け、Avalonia を唯一の正式 UI として採用しました。2026-08-29、当面の対応OSをWindowsへ限定する方針へ変更しました。WinForms版は v0.2.0 で廃止し、Core と schema v1 JSON を維持します。
 
 - バージョン: 0.2.0
 - UI: Avalonia 12.1.0
-- OS: Windows 10 / 11 x64、macOS 14以降 Apple Silicon
+- OS: Windows 10 / 11 x64
 - Windows成果物: 正式HTMLマニュアルを内包した自己完結型 `Argus.exe` 1ファイル
-- macOS成果物: 自己完結型 `Argus.app`
-- 対象外: Linux、Intel Mac、Windows arm64、署名・公証、インストーラー、自動更新
+- 対象外: macOS、Linux、Windows arm64、署名・公証、インストーラー、自動更新
 
 ## 主な機能
 
@@ -34,7 +33,6 @@ Argus は、登録した Web ページの更新有無をユーザーが任意の
 
 ```text
 Windows: %APPDATA%\Argus\targets.json
-macOS:   ~/Library/Application Support/Argus/targets.json
 ```
 
 WindowsではWinForms v0.1.0と同じパスと契約を使用するため、既存データの移行は不要です。外部データベースや秘密情報は使用しません。
@@ -62,7 +60,7 @@ dotnet test Argus.sln
 dotnet run --project Argus
 ```
 
-WindowsではVisual Studio 2026または.NET CLI、macOSではVS Codeと.NET 10 CLIを使用します。IDE拡張は必須ではありません。
+WindowsではVisual Studio 2026または.NET CLIを使用します。IDE拡張は必須ではありません。
 
 ## 初期版で対応しないこと
 
@@ -77,9 +75,10 @@ WindowsではVisual Studio 2026または.NET CLI、macOSではVS Codeと.NET 10 
 MVP後は、次の機能を追加する計画です。いずれも v0.2.0 には含まれません。
 
 - 有効な監視対象を設定した間隔で自動チェックする
-- アプリのバックグラウンド動作、または Windows のログイン時起動／タスクスケジューラー、macOS の `launchd` を利用して監視する
-- 更新ありを検出したとき、Windows または macOS の OS 標準ローカル通知を表示する
-- 未確認の更新あり対象数を Windows のタスクバーまたは macOS の Dock のアイコンバッジへ表示する
+- アプリのバックグラウンド動作、または Windows のログイン時起動／タスクスケジューラーを利用して監視する
+- 更新ありを検出したとき、Windows の OS 標準ローカル通知を表示する
+- 未確認の更新あり対象数を Windows のタスクバーアイコンへバッジ表示する
+- CSS セレクタ比較の設定時に、監視したい箇所を AI へ相談するためのプロンプトを表示・コピーする
 - LINE、Slack、メールなど外部サービスへの通知は、別途要件を追加するまで対象外とする
 
 ## ライセンス
