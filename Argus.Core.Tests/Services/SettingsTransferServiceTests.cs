@@ -35,6 +35,25 @@ public sealed class SettingsTransferServiceTests
         Assert.DoesNotContain("private comparison content", json, StringComparison.Ordinal);
     }
 
+    /// <summary>日本語の設定値をJSON上でも利用者が読める文字として出力することを検証</summary>
+    [Fact]
+    public void Export_WhenTargetHasJapaneseText_KeepsTextReadable()
+    {
+        var target = CreateTarget() with
+        {
+            Name = "悪帝の楽園",
+            Memo = "小説家になろう"
+        };
+        var service = new SettingsTransferService();
+
+        var json = service.Export([target]);
+
+        Assert.Contains("悪帝の楽園", json, StringComparison.Ordinal);
+        Assert.Contains("小説家になろう", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("\\u60AA", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\\u5C0F", json, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>設定を読み込む際に新しい識別子と空の前回データを生成することを検証</summary>
     [Fact]
     public void Import_WhenJsonIsValid_CreatesNewTargetWithoutSnapshot()

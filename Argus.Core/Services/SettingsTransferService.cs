@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Encodings.Web;
 using Argus.Core.Models;
 
 namespace Argus.Core.Services;
@@ -147,7 +148,9 @@ public sealed class SettingsTransferService
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            WriteIndented = true
+            WriteIndented = true,
+            // UTF-8のファイルとして保存するため、日本語などをそのまま表示可能にする
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         return options;
