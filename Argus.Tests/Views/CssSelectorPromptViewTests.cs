@@ -19,6 +19,10 @@ public sealed class CssSelectorPromptViewTests
         Assert.Contains("IconAi", xaml, StringComparison.Ordinal);
         Assert.Contains("ToolTip.Tip", xaml, StringComparison.Ordinal);
         Assert.Contains("AutomationProperties.Name", xaml, StringComparison.Ordinal);
+        Assert.Contains("TextBox Grid.Column=\"0\" Text=\"{Binding CssSelector}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Width=\"28\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Height=\"28\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("VerticalAlignment=\"Center\"", xaml, StringComparison.Ordinal);
     }
 
     /// <summary>AI相談ボタンの主要な操作状態で文字と背景のスタイルが定義されることを検証</summary>
@@ -47,5 +51,10 @@ public sealed class CssSelectorPromptViewTests
         Assert.Contains("IsReadOnly=\"True\"", xaml, StringComparison.Ordinal);
         Assert.Contains("CopyStatus", xaml, StringComparison.Ordinal);
         Assert.Contains("OperationError", xaml, StringComparison.Ordinal);
+        Assert.Contains("<ScrollViewer", xaml, StringComparison.Ordinal);
+        Assert.Contains("<ScrollViewer Grid.Row=\"0\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("VerticalScrollBarVisibility=\"Auto\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Grid RowDefinitions=\"*,Auto\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("<StackPanel Grid.Row=\"1\" Spacing=\"4\">", xaml, StringComparison.Ordinal);
     }
 }
